@@ -16,12 +16,12 @@ namespace CExcel.Service.Impl
             ExcelPackage ep = new ExcelPackage();
             ExcelWorkbook wb = ep.Workbook;
             string sheetName = null;
-            IExcelTypeFormater defaultExcelTypeFormater = null;
+            IExcelExportFormater defaultExcelTypeFormater = null;
             var excelAttribute = typeof(T).GetCustomAttribute<ExcelAttribute>();
             if (excelAttribute == null)
             {
                 sheetName = typeof(T).Name;
-                defaultExcelTypeFormater = new DefaultExcelTypeFormater();
+                defaultExcelTypeFormater = new DefaultExcelExportFormater();
             }
             else
             {
@@ -33,13 +33,13 @@ namespace CExcel.Service.Impl
                 {
                     sheetName = excelAttribute.SheetName;
                 }
-                if (excelAttribute.ExcelType != null)
+                if (excelAttribute.ExportExcelType != null)
                 {
-                    defaultExcelTypeFormater = Activator.CreateInstance(excelAttribute.ExcelType) as IExcelTypeFormater;
+                    defaultExcelTypeFormater = Activator.CreateInstance(excelAttribute.ExportExcelType) as IExcelExportFormater;
                 }
                 else
                 {
-                    defaultExcelTypeFormater = new DefaultExcelTypeFormater();
+                    defaultExcelTypeFormater = new DefaultExcelExportFormater();
                 }
             }
 
@@ -57,20 +57,20 @@ namespace CExcel.Service.Impl
             var mainPropertieList = mainDic.OrderBy(o => o.Value.Order).ToList();
 
 
-            IList<IExcelTypeFormater> excelTypes = new List<IExcelTypeFormater>();
+            IList<IExcelExportFormater> excelTypes = new List<IExcelExportFormater>();
             int row = 1;
             int column = 1;
 
             //表头行
             foreach (var item in mainPropertieList)
             {
-                IExcelTypeFormater excelType = null;
-                if (item.Value.ExcelType != null)
+                IExcelExportFormater excelType = null;
+                if (item.Value.ExportExcelType != null)
                 {
-                    excelType = excelTypes.Where(o => o.GetType().FullName == item.Value.ExcelType.FullName).FirstOrDefault();
+                    excelType = excelTypes.Where(o => o.GetType().FullName == item.Value.ExportExcelType.FullName).FirstOrDefault();
                     if (excelType == null)
                     {
-                        excelType = Activator.CreateInstance(item.Value.ExcelType) as IExcelTypeFormater;
+                        excelType = Activator.CreateInstance(item.Value.ExportExcelType) as IExcelExportFormater;
                         excelTypes.Add(excelType);
                     }
                 }
@@ -90,14 +90,14 @@ namespace CExcel.Service.Impl
                 column = 1;
                 foreach (var mainPropertie in mainPropertieList)
                 {
-                    IExcelTypeFormater excelType = null;
+                    IExcelExportFormater excelType = null;
                     var mainValue = mainPropertie.Key.GetValue(item);
-                    if (mainPropertie.Value.ExcelType != null)
+                    if (mainPropertie.Value.ExportExcelType != null)
                     {
-                        excelType = excelTypes.Where(o => o.GetType().FullName == mainPropertie.Value.ExcelType.FullName).FirstOrDefault();
+                        excelType = excelTypes.Where(o => o.GetType().FullName == mainPropertie.Value.ExportExcelType.FullName).FirstOrDefault();
                         if (excelType == null)
                         {
-                            excelType = Activator.CreateInstance(mainPropertie.Value.ExcelType) as IExcelTypeFormater;
+                            excelType = Activator.CreateInstance(mainPropertie.Value.ExportExcelType) as IExcelExportFormater;
                             excelTypes.Add(excelType);
                         }
                     }

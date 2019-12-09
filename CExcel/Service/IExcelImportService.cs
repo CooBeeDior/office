@@ -7,6 +7,6 @@ namespace CExcel.Service
 {
     public interface IExcelImportService<TWorkbook>
     {
-        IList<T> Export<T>(TWorkbook workbook, string sheetName) where T : class, new();
+        IList<T> Import<T>(TWorkbook workbook, string sheetName) where T : class, new();
     }
 }

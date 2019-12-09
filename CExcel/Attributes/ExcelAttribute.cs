@@ -12,28 +12,28 @@ namespace CExcel.Attributes
 
         public bool IsIncrease { get; }
         /// <summary>
-        ///必须继承 IExcelTypeFormater
+        ///导出Excel，必须继承 IExcelExportFormater,默认：DefaultExcelExportFormater
         /// </summary>
-        public Type ExcelType { get; }
+        public Type ExportExcelType { get; }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="SheetName"></param>
         /// <param name="IsIncrease"></param>
-        /// <param name="ExcelType">必须继承 IExcelTypeFormater</param>
-        public ExcelAttribute(string SheetName = null, bool IsIncrease = false, Type ExcelType = null)
+        /// <param name="ExcelType">必须继承 IExcelExportFormater,默认：DefaultExcelExportFormater </param>
+        public ExcelAttribute(string SheetName = null, bool IsIncrease = false, Type ExportExcelType = null)
         {
             this.SheetName = SheetName;
             this.IsIncrease = IsIncrease;
-            if (ExcelType != null)
+            if (ExportExcelType != null)
             {
-                if (typeof(IExcelTypeFormater).IsAssignableFrom(ExcelType))
+                if (!typeof(IExcelExportFormater).IsAssignableFrom(ExportExcelType))
                 {
                     throw new ArgumentException("not assignablefrom 【IExcelTypeFormater】");
                 }
 
-                this.ExcelType = ExcelType;
+                this.ExportExcelType = ExportExcelType;
             }
 
         }
