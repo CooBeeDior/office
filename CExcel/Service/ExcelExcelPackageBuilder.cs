@@ -18,5 +18,16 @@ namespace CExcel.Service
         {
             return new ExcelPackage(sm);
         }
+
+
+        public static ExcelPackage CreateExcelPackage(byte[] buffer)
+        {
+            return new ExcelPackage(new MemoryStream(buffer));
+        }
+
+        public static ExcelPackage CreateExcelPackage(string filename)
+        {
+            return new ExcelPackage(new FileInfo(filename));
+        }
     }
 }
