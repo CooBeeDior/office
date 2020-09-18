@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CExcel.Service
 {
-    public interface IExcelProvider<TWorkbook>  
+    public interface IExcelProvider<TWorkbook>
     {
         IExcelExportService<TWorkbook> CreateExcelExportService();
 
@@ -12,5 +12,7 @@ namespace CExcel.Service
         IExcelImportService<TWorkbook> CreateExcelImportService();
     }
 
-   
+
+
+
 }

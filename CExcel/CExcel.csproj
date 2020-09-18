@@ -21,11 +21,4 @@
     <Folder Include="Common\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="C:\Users\coobe\Desktop\excel (1).png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-
 </Project>
