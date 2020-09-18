@@ -12,8 +12,11 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddCExcelService(this IServiceCollection services)
         {            
-            services.AddSingleton<IExcelExportService<ExcelPackage>, ExcelExportService>();
-            services.AddSingleton<IExcelImportService<ExcelPackage>, ExcelImportService>();
+            //services.AddSingleton<IExcelExportService<ExcelPackage>, ExcelExportService>();
+            //services.AddSingleton<IExcelImportService<ExcelPackage>, ExcelImportService>();
+            //services.AddSingleton<IExcelProvider<ExcelPackage>, ExcelProvider>();
+
+            services.Add(new ServiceDescriptor(typeof(IExcelProvider<>), typeof(ExcelProvider), ServiceLifetime.Singleton));         
             return services;
         }
     }
