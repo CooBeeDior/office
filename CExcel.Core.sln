@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nupkg", "nupkg", "{E670D330
 		C:\Users\coobe\Desktop\nuget.exe = C:\Users\coobe\Desktop\nuget.exe
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CExcel.Sample", "CExcel.Sample\CExcel.Sample.csproj", "{B4632630-1CB2-4010-83B1-297E1F43C291}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{BCF70EF8-637D-496B-B4E7-A205D98B639C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCF70EF8-637D-496B-B4E7-A205D98B639C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCF70EF8-637D-496B-B4E7-A205D98B639C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4632630-1CB2-4010-83B1-297E1F43C291}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4632630-1CB2-4010-83B1-297E1F43C291}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4632630-1CB2-4010-83B1-297E1F43C291}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4632630-1CB2-4010-83B1-297E1F43C291}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -39,6 +45,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{1F78D4B2-7793-489C-9F7F-5C8CEE467677} = {8AF18ECA-6D7C-48F1-AD9C-3E6F7C15D35C}
 		{BCF70EF8-637D-496B-B4E7-A205D98B639C} = {D12E92D7-7BC6-4E88-BE0F-CEB9737EDF47}
+		{B4632630-1CB2-4010-83B1-297E1F43C291} = {8AF18ECA-6D7C-48F1-AD9C-3E6F7C15D35C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B14D00A3-AC77-4AF8-BB80-982DCC4FE5DE}
