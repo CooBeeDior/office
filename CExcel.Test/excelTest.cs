@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using CExcel.Attributes;
+using CExcel.Extensions;
 using CExcel.Service;
 using CExcel.Service.Impl;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OfficeOpenXml;
+using OfficeOpenXml.DataValidation;
 using OfficeOpenXml.Style;
 
 namespace CExcel.Test
@@ -52,9 +54,9 @@ namespace CExcel.Test
             {
                 var exportService = new ExcelExportService();
 
-                var excelPackage = exportService.Export(students);
+                var excelPackage = exportService.Export<Student>();
 
-         
+
                 FileInfo fileInfo = new FileInfo("a.xlsx");
                 excelPackage.SaveAs(fileInfo);
             }
@@ -80,16 +82,56 @@ namespace CExcel.Test
         public string Name { get; set; }
 
 
-        [ExportColumn("性别", 3, typeof(SexExcelTypeFormater),typeof(SexExcelImportFormater))]
+        [ExportColumn("性别", 3, typeof(SexExcelTypeFormater), typeof(SexExcelImportFormater))]
         public int Sex { get; set; }
 
-        [ExportColumn("创建时间", 4)]
+
+        [ExportColumn("邮箱", 4)]
+        public string Email { get; set; }
+
+        [ExportColumn("创建时间", 4, typeof(CreateAtExcelTypeFormater))]
         public DateTime CreateAt { get; set; }
+    }
+
+
+    public class CreateAtExcelTypeFormater : DefaultExcelExportFormater
+    {
+        public override Action<ExcelRangeBase, object> SetBodyCell()
+        {
+            return (c, o) =>
+            {
+                c.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                c.Style.Fill.BackgroundColor.SetColor(Color.Green);
+                c.Style.Numberformat.Format = "yyyy年MM月dd日 HH:mm:ss";
+                c.Style.ShrinkToFit = true;//单元格自动适应大小
+                c.AddComment(o.ToString(), $"时间:{o}");
+                c.Value = o;
+            };
+        }
     }
 
 
     public class StudentExcelTypeFormater : DefaultExcelExportFormater
     {
+        public override Action<ExcelWorksheet> SetExcelWorksheet()
+        {
+            return (s) =>
+            {
+                var address = typeof(Student).GetPropertyAddress(nameof(Student.Email));
+                address = $"{address}2:{address}1000";
+                var val2 = s.DataValidations.AddCustomValidation(address);
+                val2.ShowErrorMessage = true;
+                val2.ShowInputMessage = true;
+                val2.PromptTitle = "自定义错误信息PromptTitle";
+                val2.Prompt = "自定义错误Prompt";
+                val2.ErrorTitle = "请输入邮箱ErrorTitle";
+                val2.Error = "请输入邮箱Error";
+                val2.ErrorStyle = ExcelDataValidationWarningStyle.stop;
+                var formula = val2.Formula;
+                formula.ExcelFormula = $"=COUNTIF({address},\"?*@*.*\")";
+            };
+
+        }
         public override Action<ExcelRangeBase, object> SetBodyCell()
         {
             return (c, o) =>

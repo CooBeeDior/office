@@ -7,7 +7,7 @@ namespace CExcel.Service
 {
     public interface IExcelExportService<TWorkbook>
     {
-        TWorkbook Export<T>(IList<T> data);
+        TWorkbook Export<T>(IList<T> data = null) where T : class, new();
 
 
         Stream ToStream(TWorkbook workbook);

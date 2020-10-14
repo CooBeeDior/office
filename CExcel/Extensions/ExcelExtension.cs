@@ -12,7 +12,7 @@ namespace CExcel.Extensions
 {
     public static class ExcelExtension
     {
-        public static ExcelPackage AddSheet<T>(this ExcelPackage ep, IList<T> list) where T : class, new()
+        public static ExcelPackage AddSheet<T>(this ExcelPackage ep, IList<T> data = null) where T : class, new()
         {
             ExcelWorkbook wb = ep.Workbook;
             string sheetName = null;
@@ -42,8 +42,9 @@ namespace CExcel.Extensions
                     defaultExcelTypeFormater = new DefaultExcelExportFormater();
                 }
             }
-
             ExcelWorksheet ws1 = wb.Worksheets.Add(sheetName);
+            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
+
             Dictionary<PropertyInfo, ExportColumnAttribute> mainDic = new Dictionary<PropertyInfo, ExportColumnAttribute>();
 
             typeof(T).GetProperties().ToList().ForEach(o =>
@@ -78,41 +79,95 @@ namespace CExcel.Extensions
                 {
                     excelType = defaultExcelTypeFormater;
                 }
-                excelType.SetHeaderCell()?.Invoke(ws1.Cells[row, column], item.Value.Name ?? item.Key.Name);
+                excelType.SetHeaderCell()?.Invoke(ws1.Cells[row, column], item.Value.Name);
                 column++;
             }
 
             row++;
 
             //数据行 
-            foreach (var item in list)
+            if (data != null && data.Any())
             {
-                column = 1;
-                foreach (var mainPropertie in mainPropertieList)
+                foreach (var item in data)
                 {
-                    IExcelExportFormater excelType = null;
-                    var mainValue = mainPropertie.Key.GetValue(item);
-                    if (mainPropertie.Value.ExportExcelType != null)
+                    column = 1;
+                    foreach (var mainPropertie in mainPropertieList)
                     {
-                        excelType = excelTypes.Where(o => o.GetType().FullName == mainPropertie.Value.ExportExcelType.FullName).FirstOrDefault();
-                        if (excelType == null)
+                        IExcelExportFormater excelType = null;
+                        var mainValue = mainPropertie.Key.GetValue(item);
+                        if (mainPropertie.Value.ExportExcelType != null)
                         {
-                            excelType = Activator.CreateInstance(mainPropertie.Value.ExportExcelType) as IExcelExportFormater;
-                            excelTypes.Add(excelType);
+                            excelType = excelTypes.Where(o => o.GetType().FullName == mainPropertie.Value.ExportExcelType.FullName).FirstOrDefault();
+                            if (excelType == null)
+                            {
+                                excelType = Activator.CreateInstance(mainPropertie.Value.ExportExcelType) as IExcelExportFormater;
+                                excelTypes.Add(excelType);
+                            }
                         }
+                        else
+                        {
+                            excelType = defaultExcelTypeFormater;
+                        }
+                        excelType.SetBodyCell()?.Invoke(ws1.Cells[row, column], mainValue);
+                        column++;
                     }
-                    else
-                    {
-                        excelType = defaultExcelTypeFormater;
-                    }
-                    excelType.SetBodyCell()?.Invoke(ws1.Cells[row, column], mainValue);
-                    column++;
+                    row++;
                 }
-                row++;
             }
-
             return ep;
 
         }
+
+
+        public static string GetPropertyAddress(this Type obj, string propertyName)
+        {
+            var excelAttribute = obj.GetCustomAttribute<ExcelAttribute>();
+            if (excelAttribute == null)
+            {
+                throw new Exception($"类型必须包含{nameof(ExcelAttribute)}特性");
+            }
+
+
+            var properties = obj.GetProperties().Where(p => p.GetCustomAttribute<ExportColumnAttribute>() != null).OrderBy(p => p.GetCustomAttribute<ExportColumnAttribute>().Order).ToList();
+            if (!properties.Any(o => o.Name == propertyName))
+            {
+                throw new Exception($"不存在属性名{propertyName}且定义{nameof(ExportColumnAttribute)}");
+            }
+            int index = properties.IndexOf(properties.FirstOrDefault(o => o.Name == propertyName));
+            string address = getAddress(index);
+            return address;
+        }
+
+
+        private static string getAddress(int index)
+        {
+            string[] columnAddress = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+            if (index < columnAddress.Length)
+            {
+                return columnAddress[index];
+            }
+            if (index >= columnAddress.Length)
+            {
+                int currentIndex = columnAddress.Length;
+                for (int i = 0; i < columnAddress.Length; i++)
+                {
+                    for (int j = 0; i < columnAddress.Length; j++)
+                    {
+                        var address = $"{columnAddress[i]}{columnAddress[j]}";
+                        if (index == currentIndex)
+                        {
+                            return address;
+                        }
+                        currentIndex++;
+                    }
+
+
+                }
+
+            }
+
+            throw new Exception("定义字段过多");
+        }
+
     }
 }

@@ -9,6 +9,9 @@ using System.Text;
 
 namespace CExcel.Service.Impl
 {
+    /// <summary>
+    /// 导入
+    /// </summary>
     public class ExcelImportService : IExcelImportService<ExcelPackage>
     {
         public IList<T> Import<T>(ExcelPackage workbook, string sheetName) where T : class, new()
