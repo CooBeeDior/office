@@ -5,6 +5,9 @@ using System.Text;
 
 namespace CExcel.Service.Impl
 {
+    /// <summary>
+    /// excel提供者
+    /// </summary>
     public class ExcelProvider : IExcelProvider<ExcelPackage>
     {
         public IExcelExportService<ExcelPackage> CreateExcelExportService()

@@ -5,10 +5,12 @@ using System.Text;
 
 namespace CExcel.Service
 {
+    /// <summary>
+    /// 导出格式化
+    /// </summary>
     public interface IExcelExportFormater
-    {
-        Action<ExcelWorksheet> SetExcelWorksheet();
-           Action<ExcelRangeBase, object> SetHeaderCell();
+    { 
+        Action<ExcelRangeBase, object> SetHeaderCell();
         Action<ExcelRangeBase, object> SetBodyCell();
 
     }

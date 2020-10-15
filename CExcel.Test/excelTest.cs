@@ -54,7 +54,7 @@ namespace CExcel.Test
             {
                 var exportService = new ExcelExportService();
 
-                var excelPackage = exportService.Export<Student>();
+                var excelPackage = exportService.Export<Student>(students).AddSheet<Student>().AddSheet<Student>().AddSheet<Student>().AddSheet<Student>();
 
 
                 FileInfo fileInfo = new FileInfo("a.xlsx");
@@ -104,14 +104,27 @@ namespace CExcel.Test
                 c.Style.Fill.BackgroundColor.SetColor(Color.Green);
                 c.Style.Numberformat.Format = "yyyy年MM月dd日 HH:mm:ss";
                 c.Style.ShrinkToFit = true;//单元格自动适应大小
-                c.AddComment(o.ToString(), $"时间:{o}");
+                c.AddComment(o.ToString(), $"时间:{o}"); 
                 c.Value = o;
+            };
+        }
+
+        public override Action<ExcelRangeBase, object> SetHeaderCell()
+        {
+ 
+            return (c, o) =>
+            {
+                base.SetHeaderCell()(c,o);
+                c.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                c.Style.Fill.BackgroundColor.SetColor(Color.AliceBlue);
+                c.AddComment(o?.ToString() ?? "", "超级管理员1");
+               
             };
         }
     }
 
 
-    public class StudentExcelTypeFormater : DefaultExcelExportFormater
+    public class StudentExcelTypeFormater : DefaultExcelTypeFormater
     {
         public override Action<ExcelWorksheet> SetExcelWorksheet()
         {
@@ -132,26 +145,7 @@ namespace CExcel.Test
             };
 
         }
-        public override Action<ExcelRangeBase, object> SetBodyCell()
-        {
-            return (c, o) =>
-            {
-                c.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                c.Style.Fill.BackgroundColor.SetColor(Color.Green);
-                c.AddComment(o.ToString(), "用户1");
-                c.Value = o;
-            };
-        }
-
-        public override Action<ExcelRangeBase, object> SetHeaderCell()
-        {
-            return (c, o) =>
-            {
-                c.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                c.Style.Fill.BackgroundColor.SetColor(Color.LawnGreen);
-                c.Value = o;
-            };
-        }
+ 
     }
 
 

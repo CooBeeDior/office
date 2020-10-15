@@ -16,12 +16,12 @@ namespace CExcel.Extensions
         {
             ExcelWorkbook wb = ep.Workbook;
             string sheetName = null;
-            IExcelExportFormater defaultExcelTypeFormater = null;
+            IExcelTypeFormater defaultExcelTypeFormater = null;
             var excelAttribute = typeof(T).GetCustomAttribute<ExcelAttribute>();
             if (excelAttribute == null)
             {
                 sheetName = typeof(T).Name;
-                defaultExcelTypeFormater = new DefaultExcelExportFormater();
+                defaultExcelTypeFormater = new DefaultExcelTypeFormater();
             }
             else
             {
@@ -35,11 +35,11 @@ namespace CExcel.Extensions
                 }
                 if (excelAttribute.ExportExcelType != null)
                 {
-                    defaultExcelTypeFormater = Activator.CreateInstance(excelAttribute.ExportExcelType) as IExcelExportFormater;
+                    defaultExcelTypeFormater = Activator.CreateInstance(excelAttribute.ExportExcelType) as IExcelTypeFormater;
                 }
                 else
                 {
-                    defaultExcelTypeFormater = new DefaultExcelExportFormater();
+                    defaultExcelTypeFormater = new DefaultExcelTypeFormater();
                 }
             }
             ExcelWorksheet ws1 = wb.Worksheets.Add(sheetName);
@@ -59,6 +59,7 @@ namespace CExcel.Extensions
 
 
             IList<IExcelExportFormater> excelTypes = new List<IExcelExportFormater>();
+            IExcelExportFormater defaultExcelExportFormater = new DefaultExcelExportFormater();
             int row = 1;
             int column = 1;
 
@@ -77,7 +78,7 @@ namespace CExcel.Extensions
                 }
                 else
                 {
-                    excelType = defaultExcelTypeFormater;
+                    excelType = defaultExcelExportFormater;
                 }
                 excelType.SetHeaderCell()?.Invoke(ws1.Cells[row, column], item.Value.Name);
                 column++;
@@ -106,7 +107,7 @@ namespace CExcel.Extensions
                         }
                         else
                         {
-                            excelType = defaultExcelTypeFormater;
+                            excelType = defaultExcelExportFormater;
                         }
                         excelType.SetBodyCell()?.Invoke(ws1.Cells[row, column], mainValue);
                         column++;

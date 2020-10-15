@@ -6,7 +6,9 @@ using System.Text;
 
 namespace CExcel.Service
 {
-    /// 教程  https://www.cnblogs.com/rumeng/p/3785775.html
+    /// <summary>
+    /// excel创建者
+    /// </summary>
     public class ExcelExcelPackageBuilder
     {
         public static ExcelPackage CreateExcelPackage()

@@ -11,7 +11,7 @@ using System.Text;
 namespace CExcel.Service.Impl
 {
     /// <summary>
-    /// 导出
+    /// 导出服务
     /// </summary>
     public class ExcelExportService : IExcelExportService<ExcelPackage>
     {

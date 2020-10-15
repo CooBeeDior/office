@@ -10,7 +10,7 @@ using System.Text;
 namespace CExcel.Service.Impl
 {
     /// <summary>
-    /// 导入
+    /// 导入服务
     /// </summary>
     public class ExcelImportService : IExcelImportService<ExcelPackage>
     {
