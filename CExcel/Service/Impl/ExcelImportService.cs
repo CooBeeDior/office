@@ -53,7 +53,7 @@ namespace CExcel.Service.Impl
                 {
                     filterDic.Add(dic.Key, dic.Value);
                 }
-               
+
             }
 
             row++;
@@ -79,32 +79,36 @@ namespace CExcel.Service.Impl
                                 excelTypes.Add(excelType);
                             }
                             cellValue = excelType.Transformation(cellValue);
-                        }                  
+                        }
                         if (cellValue == null)
                         {
-                            cellValue = "";
+                            cellValue = null;
                         }
                         else if (property.PropertyType == typeof(string))
                         {
                             cellValue = cellValue.ToString();
                         }
-                        else if (property.PropertyType == typeof(int))
+                        else if (property.PropertyType == typeof(char) || property.PropertyType == typeof(char?))
+                        {
+                            cellValue = Convert.ToChar(cellValue);
+                        }
+                        else if (property.PropertyType == typeof(int) || property.PropertyType == typeof(int?))
                         {
                             cellValue = Convert.ToInt32(cellValue);
                         }
-                        else if (property.PropertyType == typeof(long))
+                        else if (property.PropertyType == typeof(long) || property.PropertyType == typeof(long?))
                         {
                             cellValue = Convert.ToInt64(cellValue);
                         }
-                        else if (property.PropertyType == typeof(double))
+                        else if (property.PropertyType == typeof(double) || property.PropertyType == typeof(double?))
                         {
                             cellValue = Convert.ToDecimal(cellValue);
                         }
-                        else if (property.PropertyType == typeof(decimal))
+                        else if (property.PropertyType == typeof(decimal) || property.PropertyType == typeof(decimal?))
                         {
                             cellValue = Convert.ToDecimal(cellValue);
                         }
-                        else if (property.PropertyType == typeof(DateTime))
+                        else if (property.PropertyType == typeof(DateTime) || property.PropertyType == typeof(DateTime?))
                         {
                             cellValue = Convert.ToDateTime(cellValue);
 
@@ -119,6 +123,7 @@ namespace CExcel.Service.Impl
 
                     column++;
                 }
+                row++;
                 list.Add(t);
             }
             return list;

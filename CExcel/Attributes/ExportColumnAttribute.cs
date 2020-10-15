@@ -26,8 +26,8 @@ namespace CExcel.Attributes
         /// </summary>
         /// <param name="Name"></param>
         /// <param name="Order"></param>
-        /// <param name="ExcelType">导出Excel，必须继承 IExcelExportFormater,默认：DefaultExcelExportFormater</param>
-        /// <param name="ImportExcelType">导入Excel，必须继承IExcelImportFormater</param>
+        /// <param name="ExcelType">导出Excel，必须继承 <see cref="IExcelExportFormater">IExcelExportFormater</see>,默认：<see cref="CExcel.Service.Impl.DefaultExcelExportFormater">DefaultExcelExportFormater</see></param>
+        /// <param name="ImportExcelType">导入Excel，必须继承<see cref="IExcelImportFormater">IExcelImportFormater</see></param>
         public ExportColumnAttribute(string Name = null, int Order = 0, Type ExportExcelType = null, Type ImportExcelType = null)
         {
             this.Name = Name;

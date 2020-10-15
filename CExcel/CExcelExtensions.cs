@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddSingleton<IExcelExportFormater, DefaultExcelExportFormater>();
             services.AddSingleton<IExcelTypeFormater, DefaultExcelTypeFormater>();
-            services.AddSingleton<IExcelImportFormater, DetaultExcelImportFormater>();
+            services.AddSingleton<IExcelImportFormater, DefaultExcelImportFormater>();
             services.AddSingleton<IExcelProvider<ExcelPackage>, ExcelProvider>(); 
             //services.Add(new ServiceDescriptor(typeof(IExcelProvider<>), typeof(ExcelProvider), ServiceLifetime.Singleton));
 

@@ -16,24 +16,9 @@ namespace CExcel.Test
     [TestClass]
     public class excelTest
     {
-        [TestMethod]
-        public void Import()
-        {
-            try
-            {
-                var excelImportService = new ExcelImportService();
-                var fs = File.Open("a.xlsx", FileMode.Open);
-                var ep = ExcelExcelPackageBuilder.CreateExcelPackage(fs);
-
-                var result = excelImportService.Import<Student>(ep, "学生信息1");
-                fs.Close();
-            }
-            catch (Exception ex)
-            {
-            }
-
-        }
-
+        /// <summary>
+        /// 导出
+        /// </summary>
         [TestMethod]
         public void Export()
         {
@@ -46,7 +31,8 @@ namespace CExcel.Test
                     Id = i,
                     Name = $"姓名{i}",
                     Sex = 2,
-                    CreateAt = DateTime.Now.AddDays(-1).AddMinutes(i),
+                    Email = $"aaa{i}@123.com",
+                    //CreateAt = DateTime.Now.AddDays(-1).AddMinutes(i),
                 };
                 students.Add(student);
             }
@@ -66,6 +52,29 @@ namespace CExcel.Test
             }
 
         }
+
+        /// <summary>
+        /// 导入
+        /// </summary>
+        [TestMethod]
+        public void Import()
+        {
+            try
+            {
+                var excelImportService = new ExcelImportService();
+                var fs = File.Open("a.xlsx", FileMode.Open);
+                var ep = ExcelExcelPackageBuilder.CreateExcelPackage(fs);
+
+                var result = excelImportService.Import<Student>(ep, "学生信息1");
+                fs.Close();
+            }
+            catch (Exception ex)
+            {
+            }
+
+        }
+
+
     }
 
 
@@ -89,10 +98,18 @@ namespace CExcel.Test
         [ExportColumn("邮箱", 4)]
         public string Email { get; set; }
 
-        [ExportColumn("创建时间", 4, typeof(CreateAtExcelTypeFormater))]
-        public DateTime CreateAt { get; set; }
+        //[ExportColumn("创建时间", 4, typeof(CreateAtExcelTypeFormater), typeof(CreateAtExcelImportFormater))]
+        //public DateTime CreateAt { get; set; }
     }
+    public class CreateAtExcelImportFormater : DefaultExcelImportFormater
+    {
+        public override object Transformation(object origin)
+        {
 
+            var date = DateTime.ParseExact(origin.ToString(), "yyyy年MM月dd日 HH:mm:ss", null);
+            return date;
+        }
+    }
 
     public class CreateAtExcelTypeFormater : DefaultExcelExportFormater
     {
@@ -102,23 +119,26 @@ namespace CExcel.Test
             {
                 c.Style.Fill.PatternType = ExcelFillStyle.Solid;
                 c.Style.Fill.BackgroundColor.SetColor(Color.Green);
-                c.Style.Numberformat.Format = "yyyy年MM月dd日 HH:mm:ss";
-                c.Style.ShrinkToFit = true;//单元格自动适应大小
-                c.AddComment(o.ToString(), $"时间:{o}"); 
+                c.Style.Numberformat.Format = "yyyy年MM月dd日 HH:mm:ss"; 
+                c.Style.ShrinkToFit = false;//单元格自动适应大小
+                //c.AddComment(o.ToString(), $"时间:{o.ToString("yyyy/MM/dd HH:mm:ss")}");
+           
+                //c.Worksheet.Column(typeof(Student).GetPropertyIndex(nameof(Student.CreateAt))).Width = 50;
                 c.Value = o;
             };
         }
 
         public override Action<ExcelRangeBase, object> SetHeaderCell()
         {
- 
+
             return (c, o) =>
             {
-                base.SetHeaderCell()(c,o);
+                base.SetHeaderCell()(c, o);
+                c.Style.Font.Color.SetColor(Color.Black);//字体颜色
                 c.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                c.Style.Fill.BackgroundColor.SetColor(Color.AliceBlue);
+                c.Style.Fill.BackgroundColor.SetColor(Color.Red);
                 c.AddComment(o?.ToString() ?? "", "超级管理员1");
-               
+
             };
         }
     }
@@ -139,13 +159,13 @@ namespace CExcel.Test
                 val2.Prompt = "自定义错误Prompt";
                 val2.ErrorTitle = "请输入邮箱ErrorTitle";
                 val2.Error = "请输入邮箱Error";
-                val2.ErrorStyle = ExcelDataValidationWarningStyle.stop;
+                val2.ErrorStyle = ExcelDataValidationWarningStyle.stop;                
                 var formula = val2.Formula;
                 formula.ExcelFormula = $"=COUNTIF({address},\"?*@*.*\")";
             };
 
         }
- 
+
     }
 
 

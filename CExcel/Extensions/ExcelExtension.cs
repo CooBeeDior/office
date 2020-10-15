@@ -119,8 +119,26 @@ namespace CExcel.Extensions
 
         }
 
-
+        /// <summary>
+        /// 根据属性名获取所在行地址
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
         public static string GetPropertyAddress(this Type obj, string propertyName)
+        {
+            int index = obj.GetPropertyIndex(propertyName);
+            string address = getAddress(index);
+            return address;
+        }
+
+        /// <summary>
+        /// 根据属性名获取该列所在行的索引
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public static int GetPropertyIndex(this Type obj, string propertyName)
         {
             var excelAttribute = obj.GetCustomAttribute<ExcelAttribute>();
             if (excelAttribute == null)
@@ -135,11 +153,9 @@ namespace CExcel.Extensions
                 throw new Exception($"不存在属性名{propertyName}且定义{nameof(ExportColumnAttribute)}");
             }
             int index = properties.IndexOf(properties.FirstOrDefault(o => o.Name == propertyName));
-            string address = getAddress(index);
-            return address;
+
+            return index + 1;
         }
-
-
         private static string getAddress(int index)
         {
             string[] columnAddress = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };

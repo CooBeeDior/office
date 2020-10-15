@@ -7,9 +7,9 @@ namespace CExcel.Service.Impl
     /// <summary>
     /// 导入格式化
     /// </summary>
-    public class DetaultExcelImportFormater : IExcelImportFormater
+    public class DefaultExcelImportFormater : IExcelImportFormater
     {
-        public object Transformation(object origin)
+        public virtual object Transformation(object origin)
         {
             return origin;
         }
