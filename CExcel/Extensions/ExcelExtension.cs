@@ -1,9 +1,12 @@
 ﻿using CExcel.Attributes;
+using CExcel.Exceptions;
 using CExcel.Service;
 using CExcel.Service.Impl;
 using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -27,7 +30,15 @@ namespace CExcel.Extensions
             {
                 if (excelAttribute.IsIncrease)
                 {
-                    sheetName = $"{excelAttribute.SheetName}{wb.Worksheets.Count + 1}";
+                    if (wb.Worksheets.Count == 0)
+                    {
+                        sheetName = $"{excelAttribute.SheetName}";
+                    }
+                    else
+                    {
+                        sheetName = $"{excelAttribute.SheetName}{wb.Worksheets.Count}";
+                    }
+                   
                 }
                 else
                 {
@@ -119,6 +130,60 @@ namespace CExcel.Extensions
 
         }
 
+
+        public static ExcelPackage AddErrors(this ExcelPackage ep, string sheetName, IList<ExportExcelError> errors, Action<ExcelRangeBase, string> action = null)
+        {
+            if (errors == null || !errors.Any())
+            {
+                return ep;
+            }
+            var workSheet = ep.Workbook.Worksheets[sheetName];
+            if (workSheet == null)
+            {
+                throw new Exception($"{sheetName}不存在");
+            }
+            if (action == null)
+            {
+                action = (cell, msg) =>
+                {
+                    cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                    cell.Style.Fill.BackgroundColor.SetColor(Color.Red);
+                    if (cell.Comment == null)
+                    {
+                        cell.AddComment(msg, "管理员");
+                    }
+                    else
+                    {
+                        cell.Comment.Text = msg;
+                    } 
+                };
+            }
+           
+            foreach (var item in errors)
+            {
+                var cell = workSheet.Cells[item.Row, item.Column];
+                action(cell, item.Message);
+            }
+            return ep;
+
+        }
+
+        public static ExcelPackage AddErrors<T>(this ExcelPackage ep, IList<ExportExcelError> errors, Action<ExcelRangeBase, string> action = null)
+        {
+            string sheetName = null;
+            var excelAttribute = typeof(T).GetCustomAttribute<ExcelAttribute>();
+            if (excelAttribute != null)
+            {
+                sheetName = excelAttribute.SheetName;
+            }
+            else
+            {
+                sheetName = nameof(T);
+            }
+            return ep.AddErrors(sheetName, errors, action);
+        }
+      
+        
         /// <summary>
         /// 根据属性名获取所在行地址
         /// </summary>

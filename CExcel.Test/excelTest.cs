@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.IO;
 using CExcel.Attributes;
+using CExcel.Exceptions;
 using CExcel.Extensions;
 using CExcel.Service;
 using CExcel.Service.Impl;
@@ -59,14 +61,48 @@ namespace CExcel.Test
         [TestMethod]
         public void Import()
         {
+            ExcelPackage ep = null;
+
+            try
+            {
+                var excelImportService = new ExcelImportService();
+                using (var fs = File.Open("a.xlsx", FileMode.Open))
+                    ep = ExcelExcelPackageBuilder.CreateExcelPackage(fs);
+
+                var result = excelImportService.Import<Student>(ep);
+           
+            }
+            catch (ExportExcelException ex)
+            {
+                ep.AddErrors<Student>(ex.ExportExcelErrors);
+                FileInfo fileInfo = new FileInfo("b.xlsx");
+                ep.SaveAs(fileInfo);
+            }
+            catch (Exception ex) { }
+
+        }
+
+        /// <summary>
+        /// 导入错误
+        /// </summary>
+        [TestMethod]
+        public void AddError()
+        {
             try
             {
                 var excelImportService = new ExcelImportService();
                 var fs = File.Open("a.xlsx", FileMode.Open);
                 var ep = ExcelExcelPackageBuilder.CreateExcelPackage(fs);
-
-                var result = excelImportService.Import<Student>(ep, "学生信息1");
                 fs.Close();
+                IList<ExportExcelError> errors = new List<ExportExcelError>();
+                ExportExcelError a = new ExportExcelError(2, 3, "错误的");
+                ExportExcelError b = new ExportExcelError(3, 3, "错误的11133");
+                errors.Add(a);
+                errors.Add(b);
+
+                ep.AddErrors<Student>(errors);
+                var fs1 = File.Open("a.xlsx", FileMode.Open, FileAccess.ReadWrite);
+                ep.SaveAs(fs1);
             }
             catch (Exception ex)
             {
@@ -88,6 +124,7 @@ namespace CExcel.Test
         public int Id { get; set; }
 
         [ExportColumn("姓名", 2)]
+        [EmailAddress(ErrorMessage ="不是邮箱格式")]
         public string Name { get; set; }
 
 
@@ -96,6 +133,7 @@ namespace CExcel.Test
 
 
         [ExportColumn("邮箱", 4)]
+        [EmailAddress]
         public string Email { get; set; }
 
         //[ExportColumn("创建时间", 4, typeof(CreateAtExcelTypeFormater), typeof(CreateAtExcelImportFormater))]
@@ -119,10 +157,10 @@ namespace CExcel.Test
             {
                 c.Style.Fill.PatternType = ExcelFillStyle.Solid;
                 c.Style.Fill.BackgroundColor.SetColor(Color.Green);
-                c.Style.Numberformat.Format = "yyyy年MM月dd日 HH:mm:ss"; 
+                c.Style.Numberformat.Format = "yyyy年MM月dd日 HH:mm:ss";
                 c.Style.ShrinkToFit = false;//单元格自动适应大小
-                //c.AddComment(o.ToString(), $"时间:{o.ToString("yyyy/MM/dd HH:mm:ss")}");
-           
+                                            //c.AddComment(o.ToString(), $"时间:{o.ToString("yyyy/MM/dd HH:mm:ss")}");
+
                 //c.Worksheet.Column(typeof(Student).GetPropertyIndex(nameof(Student.CreateAt))).Width = 50;
                 c.Value = o;
             };
@@ -159,7 +197,7 @@ namespace CExcel.Test
                 val2.Prompt = "自定义错误Prompt";
                 val2.ErrorTitle = "请输入邮箱ErrorTitle";
                 val2.Error = "请输入邮箱Error";
-                val2.ErrorStyle = ExcelDataValidationWarningStyle.stop;                
+                val2.ErrorStyle = ExcelDataValidationWarningStyle.stop;
                 var formula = val2.Formula;
                 formula.ExcelFormula = $"=COUNTIF({address},\"?*@*.*\")";
             };

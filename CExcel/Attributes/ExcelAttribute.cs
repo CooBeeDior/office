@@ -22,18 +22,22 @@ namespace CExcel.Attributes
         /// <param name="SheetName"></param>
         /// <param name="IsIncrease"></param>
         /// <param name="ExcelType">必须继承 <see cref="CExcel.Service.IExcelTypeFormater">IExcelTypeFormater</see>,默认：<see cref="CExcel.Service.Impl.DefaultExcelTypeFormater">DefaultExcelTypeFormater</see> </param>
-        public ExcelAttribute(string SheetName = null, bool IsIncrease = false, Type ExportExcelType = null)
+        public ExcelAttribute(string sheetName, bool isIncrease = false, Type exportExcelType = null)
         {
-            this.SheetName = SheetName;
-            this.IsIncrease = IsIncrease;
-            if (ExportExcelType != null)
+            if (string.IsNullOrWhiteSpace(sheetName))
             {
-                if (!typeof(IExcelTypeFormater).IsAssignableFrom(ExportExcelType))
+                throw new ArgumentNullException(nameof(sheetName));
+            }
+            this.SheetName = sheetName;
+            this.IsIncrease = isIncrease;
+            if (exportExcelType != null)
+            {
+                if (!typeof(IExcelTypeFormater).IsAssignableFrom(exportExcelType))
                 {
                     throw new ArgumentException("not assignablefrom 【IExcelTypeFormater】");
                 }
 
-                this.ExportExcelType = ExportExcelType;
+                this.ExportExcelType = exportExcelType;
             }
 
         }
