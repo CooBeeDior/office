@@ -4,9 +4,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-
-[assembly: AssemblyDescription("A lightweight excel service")]
-[assembly: AssemblyCopyright("Copyright © coobeedior 2020")]
+ 
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
