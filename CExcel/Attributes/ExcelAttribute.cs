@@ -32,7 +32,8 @@ namespace CExcel.Attributes
             this.IsIncrease = isIncrease;
             if (exportExcelType != null)
             {
-                if (!typeof(IExcelTypeFormater).IsAssignableFrom(exportExcelType))
+                var type=typeof(IExcelTypeFormater<>).MakeGenericType(exportExcelType.GetInterfaces()[0].GenericTypeArguments[0]);
+                if (!type.IsAssignableFrom(exportExcelType))
                 {
                     throw new ArgumentException("not assignablefrom 【IExcelTypeFormater】");
                 }

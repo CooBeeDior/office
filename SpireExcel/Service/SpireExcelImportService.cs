@@ -1,42 +1,40 @@
 ﻿using CExcel.Attributes;
 using CExcel.Exceptions;
-using OfficeOpenXml;
+using CExcel.Service;
+using Spire.Xls;
+using SpireExcel.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace CExcel.Service.Impl
+namespace SpireExcel
 {
-    /// <summary>
-    /// 导入服务
-    /// </summary>
-    /// <exception cref="ExportExcelException">导出数据校验不通过</exception>
-    public class ExcelImportService : IExcelImportService<ExcelPackage>
+    public class SpireExcelImportService : IExcelImportService<Workbook>
     {
-        public IList<T> Import<T>(ExcelPackage workbook, string sheetName = null) where T : class, new()
+        public IList<T> Import<T>(Workbook workbook, string sheetName = null) where T : class, new()
         {
-            ExcelWorksheet ws1 = null;
+            Worksheet ws1 = null;
             if (string.IsNullOrEmpty(sheetName))
             {
                 var arrtibute = typeof(T).GetCustomAttribute<ExcelAttribute>();
                 if (arrtibute != null)
                 {
-                    ws1 = workbook.Workbook.Worksheets[arrtibute.SheetName];
+                    ws1 = workbook.Worksheets[arrtibute.SheetName];
                 }
                 else
                 {
-                    ws1 = workbook.Workbook.Worksheets[1];
+                    ws1 = workbook.Worksheets[1];
                 }
 
             }
             else
             {
-                ws1 = workbook.Workbook.Worksheets[sheetName];
-            } 
+                ws1 = workbook.Worksheets[sheetName];
+            }
 
             Dictionary<PropertyInfo, ExcelColumnAttribute> mainDic = new Dictionary<PropertyInfo, ExcelColumnAttribute>();
 
@@ -50,8 +48,8 @@ namespace CExcel.Service.Impl
             });
             //var mainPropertieList = mainDic.OrderBy(o => o.Value.Order).ToList();
 
-            int totalRows = ws1.Dimension.Rows;
-            int totalColums = ws1.Dimension.Columns;
+            int totalRows = ws1.Rows.Count();
+            int totalColums = ws1.Columns.Count();
 
             IList<T> list = new List<T>();
             //表头行
@@ -59,7 +57,7 @@ namespace CExcel.Service.Impl
             Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>> filterDic = new Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>>();
             for (int i = 1; i <= totalColums; i++)
             {
-                var dic = mainDic.Where(o => o.Value.Name.Equals(ws1.Cells[row, i].Value?.ToString()?.Trim()) || o.Key.Name.Equals(ws1.Cells[row, i].Value?.ToString()?.Trim())).FirstOrDefault();
+                var dic = mainDic.Where(o => o.Value.Name.Equals(ws1[row, i].Value2?.ToString()?.Trim()) || o.Key.Name.Equals(ws1[row, i].Value2?.ToString()?.Trim())).FirstOrDefault();
                 if (dic.Key != null)
                 {
                     var validationAttributes = dic.Key.GetCustomAttributes<ValidationAttribute>();
@@ -84,7 +82,7 @@ namespace CExcel.Service.Impl
                     var property = item.Key;
                     if (property != null)
                     {
-                        object cellValue = ws1.GetValue(row, column);
+                        object cellValue = ws1[row,column].Value;
                         if (item.Value.Item2 != null && item.Value.Item2.Any())
                         {
                             foreach (var validator in item.Value.Item2)
@@ -97,7 +95,7 @@ namespace CExcel.Service.Impl
                             }
                         }
                         if (flag)
-                        { 
+                        {
                             if (item.Value.Item1.ImportExcelType != null)
                             {
                                 var excelType = excelTypes.Where(o => o.GetType().FullName == item.Value.Item1.ImportExcelType.FullName).FirstOrDefault();
@@ -161,5 +159,9 @@ namespace CExcel.Service.Impl
             }
             return list;
         }
+
+
+
+       
     }
 }

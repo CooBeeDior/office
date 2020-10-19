@@ -12,12 +12,22 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OfficeOpenXml;
 using OfficeOpenXml.DataValidation;
 using OfficeOpenXml.Style;
-
+using Microsoft.Extensions.DependencyInjection;
 namespace CExcel.Test
 {
     [TestClass]
     public class excelTest
     {
+        private readonly IExcelExportService<ExcelPackage> exportService = null;
+        private readonly IExcelImportService<ExcelPackage> excelImportService = null;
+        private readonly IWorkbookBuilder<ExcelPackage> workbookBuilder;
+        public excelTest()
+        {
+            var provider = Ioc.AddCExcelService();
+            exportService = provider.GetService<IExcelExportService<ExcelPackage>>();
+            excelImportService = provider.GetService<IExcelImportService<ExcelPackage>>();
+            workbookBuilder = provider.GetService<IWorkbookBuilder<ExcelPackage>>();
+        }
         /// <summary>
         /// 导出
         /// </summary>
@@ -40,8 +50,6 @@ namespace CExcel.Test
             }
             try
             {
-                var exportService = new ExcelExportService();
-
                 var excelPackage = exportService.Export<Student>(students).AddSheet<Student>().AddSheet<Student>().AddSheet<Student>().AddSheet<Student>();
 
 
@@ -65,12 +73,11 @@ namespace CExcel.Test
 
             try
             {
-                var excelImportService = new ExcelImportService();
                 using (var fs = File.Open("a.xlsx", FileMode.Open))
-                    ep = ExcelExcelPackageBuilder.CreateExcelPackage(fs);
+                    ep = workbookBuilder.CreateWorkbook(fs);
 
                 var result = excelImportService.Import<Student>(ep);
-           
+
             }
             catch (ExportExcelException ex)
             {
@@ -89,10 +96,9 @@ namespace CExcel.Test
         public void AddError()
         {
             try
-            {
-                var excelImportService = new ExcelImportService();
+            { 
                 var fs = File.Open("a.xlsx", FileMode.Open);
-                var ep = ExcelExcelPackageBuilder.CreateExcelPackage(fs);
+                var ep = workbookBuilder.CreateWorkbook(fs);
                 fs.Close();
                 IList<ExportExcelError> errors = new List<ExportExcelError>();
                 ExportExcelError a = new ExportExcelError(2, 3, "错误的");
@@ -120,66 +126,28 @@ namespace CExcel.Test
         /// <summary>
         /// 主键
         /// </summary>
-        [ExportColumn("Id", 1)]
+        [ExcelColumn("Id", 1)]
         public int Id { get; set; }
 
-        [ExportColumn("姓名", 2)]
-        [EmailAddress(ErrorMessage ="不是邮箱格式")]
+        [ExcelColumn("姓名", 2)]
+        [EmailAddress(ErrorMessage = "不是邮箱格式")]
         public string Name { get; set; }
 
 
-        [ExportColumn("性别", 3, typeof(SexExcelTypeFormater), typeof(SexExcelImportFormater))]
+        [ExcelColumn("性别", 3, typeof(SexExcelTypeFormater), typeof(SexExcelImportFormater))]
         public int Sex { get; set; }
 
 
-        [ExportColumn("邮箱", 4)]
+        [ExcelColumn("邮箱", 4)]
         [EmailAddress]
         public string Email { get; set; }
 
         //[ExportColumn("创建时间", 4, typeof(CreateAtExcelTypeFormater), typeof(CreateAtExcelImportFormater))]
         //public DateTime CreateAt { get; set; }
     }
-    public class CreateAtExcelImportFormater : DefaultExcelImportFormater
-    {
-        public override object Transformation(object origin)
-        {
+ 
 
-            var date = DateTime.ParseExact(origin.ToString(), "yyyy年MM月dd日 HH:mm:ss", null);
-            return date;
-        }
-    }
-
-    public class CreateAtExcelTypeFormater : DefaultExcelExportFormater
-    {
-        public override Action<ExcelRangeBase, object> SetBodyCell()
-        {
-            return (c, o) =>
-            {
-                c.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                c.Style.Fill.BackgroundColor.SetColor(Color.Green);
-                c.Style.Numberformat.Format = "yyyy年MM月dd日 HH:mm:ss";
-                c.Style.ShrinkToFit = false;//单元格自动适应大小
-                                            //c.AddComment(o.ToString(), $"时间:{o.ToString("yyyy/MM/dd HH:mm:ss")}");
-
-                //c.Worksheet.Column(typeof(Student).GetPropertyIndex(nameof(Student.CreateAt))).Width = 50;
-                c.Value = o;
-            };
-        }
-
-        public override Action<ExcelRangeBase, object> SetHeaderCell()
-        {
-
-            return (c, o) =>
-            {
-                base.SetHeaderCell()(c, o);
-                c.Style.Font.Color.SetColor(Color.Black);//字体颜色
-                c.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                c.Style.Fill.BackgroundColor.SetColor(Color.Red);
-                c.AddComment(o?.ToString() ?? "", "超级管理员1");
-
-            };
-        }
-    }
+ 
 
 
     public class StudentExcelTypeFormater : DefaultExcelTypeFormater

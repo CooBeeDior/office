@@ -11,6 +11,6 @@ namespace CExcel.Service
     /// <typeparam name="TWorkbook"></typeparam>
     public interface IExcelImportService<TWorkbook>
     {
-        IList<T> Import<T>(TWorkbook workbook, string sheetName) where T : class, new();
+        IList<T> Import<T>(TWorkbook workbook, string sheetName = null) where T : class, new();
     }
 }

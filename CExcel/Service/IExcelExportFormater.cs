@@ -8,10 +8,10 @@ namespace CExcel.Service
     /// <summary>
     /// 导出格式化
     /// </summary>
-    public interface IExcelExportFormater
+    public interface IExcelExportFormater<TExcelRange>
     { 
-        Action<ExcelRangeBase, object> SetHeaderCell();
-        Action<ExcelRangeBase, object> SetBodyCell();
+        Action<TExcelRange, object> SetHeaderCell();
+        Action<TExcelRange, object> SetBodyCell();
 
     }
 }

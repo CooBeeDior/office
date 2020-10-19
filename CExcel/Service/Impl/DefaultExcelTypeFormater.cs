@@ -12,7 +12,7 @@ namespace CExcel.Service.Impl
     /// <summary>
     /// excel格式化
     /// </summary>
-    public class DefaultExcelTypeFormater : IExcelTypeFormater
+    public class DefaultExcelTypeFormater : IExcelTypeFormater<ExcelWorksheet>
     {
         public virtual Action<ExcelWorksheet> SetExcelWorksheet()
         {

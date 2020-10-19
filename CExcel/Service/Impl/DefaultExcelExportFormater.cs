@@ -13,7 +13,7 @@ namespace CExcel.Service.Impl
     /// <summary>
     /// 导出格式化
     /// </summary>
-    public class DefaultExcelExportFormater : IExcelExportFormater
+    public class DefaultExcelExportFormater : IExcelExportFormater<ExcelRangeBase>
     {
 
         public virtual Action<ExcelRangeBase, object> SetHeaderCell()
@@ -54,6 +54,11 @@ namespace CExcel.Service.Impl
         {
             return (c, o) =>
             {
+                #region 设置单元格对齐方式   
+                c.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;//水平居中
+                c.Style.VerticalAlignment = ExcelVerticalAlignment.Center;//垂直居中
+                #endregion
+
                 c.Value = o;
             };
         }

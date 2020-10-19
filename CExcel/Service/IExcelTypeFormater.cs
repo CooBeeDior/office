@@ -8,9 +8,9 @@ namespace CExcel.Service
     /// <summary>
     /// excel格式化
     /// </summary>
-    public interface IExcelTypeFormater
+    public interface IExcelTypeFormater<TWorksheet>
     {
-        Action<ExcelWorksheet> SetExcelWorksheet();
+        Action<TWorksheet> SetExcelWorksheet();
 
     }
 }

@@ -7,7 +7,7 @@ namespace CExcel.Attributes
 {
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class ExportColumnAttribute : Attribute
+    public class ExcelColumnAttribute : Attribute
     {
         public string Name { get; set; }
         public int Order { get; set; }
@@ -28,13 +28,14 @@ namespace CExcel.Attributes
         /// <param name="Order"></param>
         /// <param name="ExcelType">导出Excel，必须继承 <see cref="IExcelExportFormater">IExcelExportFormater</see>,默认：<see cref="CExcel.Service.Impl.DefaultExcelExportFormater">DefaultExcelExportFormater</see></param>
         /// <param name="ImportExcelType">导入Excel，必须继承<see cref="IExcelImportFormater">IExcelImportFormater</see></param>
-        public ExportColumnAttribute(string Name = null, int Order = 0, Type ExportExcelType = null, Type ImportExcelType = null)
+        public ExcelColumnAttribute(string Name = null, int Order = 0, Type ExportExcelType = null, Type ImportExcelType = null)
         {
             this.Name = Name;
             this.Order = Order;
             if (ExportExcelType != null)
             {
-                if (!typeof(IExcelExportFormater).IsAssignableFrom(ExportExcelType))
+                var type = typeof(IExcelExportFormater<>).MakeGenericType(ExportExcelType.GetInterfaces()[0].GenericTypeArguments[0]);
+                if (!type.IsAssignableFrom(ExportExcelType))
                 {
                     throw new ArgumentException("not assignablefrom 【IExcelExportFormater】");
                 }

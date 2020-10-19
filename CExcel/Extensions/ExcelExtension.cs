@@ -19,7 +19,7 @@ namespace CExcel.Extensions
         {
             ExcelWorkbook wb = ep.Workbook;
             string sheetName = null;
-            IExcelTypeFormater defaultExcelTypeFormater = null;
+            IExcelTypeFormater<ExcelWorksheet> defaultExcelTypeFormater = null;
             var excelAttribute = typeof(T).GetCustomAttribute<ExcelAttribute>();
             if (excelAttribute == null)
             {
@@ -46,7 +46,7 @@ namespace CExcel.Extensions
                 }
                 if (excelAttribute.ExportExcelType != null)
                 {
-                    defaultExcelTypeFormater = Activator.CreateInstance(excelAttribute.ExportExcelType) as IExcelTypeFormater;
+                    defaultExcelTypeFormater = Activator.CreateInstance(excelAttribute.ExportExcelType) as IExcelTypeFormater<ExcelWorksheet>;
                 }
                 else
                 {
@@ -56,11 +56,11 @@ namespace CExcel.Extensions
             ExcelWorksheet ws1 = wb.Worksheets.Add(sheetName);
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
 
-            Dictionary<PropertyInfo, ExportColumnAttribute> mainDic = new Dictionary<PropertyInfo, ExportColumnAttribute>();
+            Dictionary<PropertyInfo, ExcelColumnAttribute> mainDic = new Dictionary<PropertyInfo, ExcelColumnAttribute>();
 
             typeof(T).GetProperties().ToList().ForEach(o =>
             {
-                var attribute = o.GetCustomAttribute<ExportColumnAttribute>();
+                var attribute = o.GetCustomAttribute<ExcelColumnAttribute>();
                 if (attribute != null)
                 {
                     mainDic.Add(o, attribute);
@@ -69,21 +69,21 @@ namespace CExcel.Extensions
             var mainPropertieList = mainDic.OrderBy(o => o.Value.Order).ToList();
 
 
-            IList<IExcelExportFormater> excelTypes = new List<IExcelExportFormater>();
-            IExcelExportFormater defaultExcelExportFormater = new DefaultExcelExportFormater();
+            IList<IExcelExportFormater<ExcelRangeBase>> excelTypes = new List<IExcelExportFormater<ExcelRangeBase>>();
+            IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
             int row = 1;
             int column = 1;
 
             //表头行
             foreach (var item in mainPropertieList)
             {
-                IExcelExportFormater excelType = null;
+                IExcelExportFormater<ExcelRangeBase> excelType = null;
                 if (item.Value.ExportExcelType != null)
                 {
                     excelType = excelTypes.Where(o => o.GetType().FullName == item.Value.ExportExcelType.FullName).FirstOrDefault();
                     if (excelType == null)
                     {
-                        excelType = Activator.CreateInstance(item.Value.ExportExcelType) as IExcelExportFormater;
+                        excelType = Activator.CreateInstance(item.Value.ExportExcelType) as IExcelExportFormater<ExcelRangeBase>;
                         excelTypes.Add(excelType);
                     }
                 }
@@ -105,14 +105,14 @@ namespace CExcel.Extensions
                     column = 1;
                     foreach (var mainPropertie in mainPropertieList)
                     {
-                        IExcelExportFormater excelType = null;
+                        IExcelExportFormater<ExcelRangeBase> excelType = null;
                         var mainValue = mainPropertie.Key.GetValue(item);
                         if (mainPropertie.Value.ExportExcelType != null)
                         {
                             excelType = excelTypes.Where(o => o.GetType().FullName == mainPropertie.Value.ExportExcelType.FullName).FirstOrDefault();
                             if (excelType == null)
                             {
-                                excelType = Activator.CreateInstance(mainPropertie.Value.ExportExcelType) as IExcelExportFormater;
+                                excelType = Activator.CreateInstance(mainPropertie.Value.ExportExcelType) as IExcelExportFormater<ExcelRangeBase>;
                                 excelTypes.Add(excelType);
                             }
                         }
@@ -212,10 +212,10 @@ namespace CExcel.Extensions
             }
 
 
-            var properties = obj.GetProperties().Where(p => p.GetCustomAttribute<ExportColumnAttribute>() != null).OrderBy(p => p.GetCustomAttribute<ExportColumnAttribute>().Order).ToList();
+            var properties = obj.GetProperties().Where(p => p.GetCustomAttribute<ExcelColumnAttribute>() != null).OrderBy(p => p.GetCustomAttribute<ExcelColumnAttribute>().Order).ToList();
             if (!properties.Any(o => o.Name == propertyName))
             {
-                throw new Exception($"不存在属性名{propertyName}且定义{nameof(ExportColumnAttribute)}");
+                throw new Exception($"不存在属性名{propertyName}且定义{nameof(ExcelColumnAttribute)}");
             }
             int index = properties.IndexOf(properties.FirstOrDefault(o => o.Name == propertyName));
 

@@ -4,31 +4,31 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace CExcel.Service
+namespace CExcel.Service.Impl
 {
     /// <summary>
     /// excel创建者
     /// </summary>
-    public class ExcelExcelPackageBuilder
+    public class ExcelPackageBuilder : IWorkbookBuilder<ExcelPackage>
     {
-        public static ExcelPackage CreateExcelPackage()
+        public ExcelPackage CreateWorkbook()
         {
             return new ExcelPackage();
         }
 
 
-        public static ExcelPackage CreateExcelPackage(Stream sm)
+        public ExcelPackage CreateWorkbook(Stream sm)
         {
             return new ExcelPackage(sm);
         }
 
 
-        public static ExcelPackage CreateExcelPackage(byte[] buffer)
+        public ExcelPackage CreateWorkbook(byte[] buffer)
         {
             return new ExcelPackage(new MemoryStream(buffer));
         }
 
-        public static ExcelPackage CreateExcelPackage(string filename)
+        public ExcelPackage CreateWorkbook(string filename)
         {
             return new ExcelPackage(new FileInfo(filename));
         }

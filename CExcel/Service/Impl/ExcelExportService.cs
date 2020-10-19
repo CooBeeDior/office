@@ -15,9 +15,14 @@ namespace CExcel.Service.Impl
     /// </summary>
     public class ExcelExportService : IExcelExportService<ExcelPackage>
     {
+        private readonly IWorkbookBuilder<ExcelPackage> _workbookBuilder;
+        public ExcelExportService(IWorkbookBuilder<ExcelPackage> workbookBuilder)
+        {
+            _workbookBuilder = workbookBuilder;
+        }
         public ExcelPackage Export<T>(IList<T> data = null) where T : class, new()
         {
-            ExcelPackage ep = new ExcelPackage();
+            var ep = _workbookBuilder.CreateWorkbook();
             return ep.AddSheet(data);
         }
 
