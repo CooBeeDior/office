@@ -14,6 +14,7 @@ namespace CExcel.Service.Impl
     /// <summary>
     /// 导入服务
     /// </summary>
+    /// <exception cref="ExportExcelException">导出数据校验不通过</exception>
     public class ExcelImportService : IExcelImportService<ExcelPackage>
     {
         public IList<T> Import<T>(ExcelPackage workbook, string sheetName = null) where T : class, new()
