@@ -9,8 +9,18 @@ namespace CExcel.Attributes
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class ExcelColumnAttribute : Attribute
     {
-        public string Name { get; set; }
+        /// <summary>
+        /// 名称
+        /// </summary>
+        public string Name { get; }
+        /// <summary>
+        /// 排序
+        /// </summary>
         public int Order { get; set; }
+        /// <summary>
+        /// 是否忽略
+        /// </summary>
+        public bool Ignore { get; }
         /// <summary>
         /// 导出Excel，必须继承 IExcelExportFormater,默认：DefaultExcelExportFormater
         /// </summary>
@@ -24,33 +34,77 @@ namespace CExcel.Attributes
         /// <summary>
         /// 构造
         /// </summary>
-        /// <param name="Name"></param>
-        /// <param name="Order"></param>
-        /// <param name="ExcelType">导出Excel，必须继承 <see cref="IExcelExportFormater">IExcelExportFormater</see>,默认：<see cref="CExcel.Service.Impl.DefaultExcelExportFormater">DefaultExcelExportFormater</see></param>
-        /// <param name="ImportExcelType">导入Excel，必须继承<see cref="IExcelImportFormater">IExcelImportFormater</see></param>
-        public ExcelColumnAttribute(string Name = null, int Order = 0, Type ExportExcelType = null, Type ImportExcelType = null)
+        /// <param name="name"></param>
+        /// <param name="order"></param>
+        /// <param name="ignore"></param>
+        /// <param name="exportExcelType">导出Excel，必须继承 <see cref="IExcelExportFormater">IExcelExportFormater</see>,默认：<see cref="CExcel.Service.Impl.DefaultExcelExportFormater">DefaultExcelExportFormater</see></param>
+        /// <param name="importExcelType">导入Excel，必须继承<see cref="IExcelImportFormater">IExcelImportFormater</see></param>
+        public ExcelColumnAttribute(string name, int order, bool ignore = false, Type exportExcelType = null, Type importExcelType = null)
         {
-            this.Name = Name;
-            this.Order = Order;
-            if (ExportExcelType != null)
+            this.Name = name;
+            this.Order = order;
+            this.Ignore = ignore;
+            if (exportExcelType != null)
             {
-                var type = typeof(IExcelExportFormater<>).MakeGenericType(ExportExcelType.GetInterfaces()[0].GenericTypeArguments[0]);
-                if (!type.IsAssignableFrom(ExportExcelType))
+                var type = typeof(IExcelExportFormater<>).MakeGenericType(exportExcelType.GetInterfaces()[0].GenericTypeArguments[0]);
+                if (!type.IsAssignableFrom(exportExcelType))
                 {
                     throw new ArgumentException("not assignablefrom 【IExcelExportFormater】");
                 }
 
-                this.ExportExcelType = ExportExcelType;
+                this.ExportExcelType = exportExcelType;
             }
-            if (ImportExcelType != null)
+            if (importExcelType != null)
             {
-                if (!typeof(IExcelImportFormater).IsAssignableFrom(ImportExcelType))
+                if (!typeof(IExcelImportFormater).IsAssignableFrom(importExcelType))
                 {
                     throw new ArgumentException("not assignablefrom 【IExcelImportFormater】");
                 }
 
-                this.ImportExcelType = ImportExcelType;
+                this.ImportExcelType = importExcelType;
             }
+
+        }
+
+
+        /// <summary>
+        /// 构造
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="order"></param> 
+        /// <param name="exportExcelType">导出Excel，必须继承 <see cref="IExcelExportFormater">IExcelExportFormater</see>,默认：<see cref="CExcel.Service.Impl.DefaultExcelExportFormater">DefaultExcelExportFormater</see></param>
+        /// <param name="importExcelType">导入Excel，必须继承<see cref="IExcelImportFormater">IExcelImportFormater</see></param>
+        public ExcelColumnAttribute(string name, int order, Type exportExcelType, Type importExcelType) : this(name, order, false, exportExcelType, importExcelType)
+        {
+
+        }
+
+        /// <summary>
+        /// 构造
+        /// </summary>
+        /// <param name="name"></param> 
+        /// <param name="exportExcelType">导出Excel，必须继承 <see cref="IExcelExportFormater">IExcelExportFormater</see>,默认：<see cref="CExcel.Service.Impl.DefaultExcelExportFormater">DefaultExcelExportFormater</see></param>
+        /// <param name="importExcelType">导入Excel，必须继承<see cref="IExcelImportFormater">IExcelImportFormater</see></param>
+        public ExcelColumnAttribute(string name, Type exportExcelType, Type importExcelType) : this(name, 0, false, exportExcelType, importExcelType)
+        {
+
+        }
+        /// <summary>
+        /// 构造
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="order"></param> 
+        public ExcelColumnAttribute(string name, int order) : this(name, order, false, null, null)
+        {
+
+        }
+
+        /// <summary>
+        /// 构造
+        /// </summary>
+        /// <param name="name"></param>
+        public ExcelColumnAttribute(string name) : this(name, 0, false, null, null)
+        {
 
         }
 

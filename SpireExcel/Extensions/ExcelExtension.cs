@@ -61,7 +61,17 @@ namespace SpireExcel.Extensions
             typeof(T).GetProperties().ToList().ForEach(o =>
             {
                 var attribute = o.GetCustomAttribute<ExcelColumnAttribute>();
-                if (attribute != null)
+                if (attribute == null)
+                {
+                    int order = 1;
+                    if (mainDic.Count - 1 > 0)
+                    {
+                        order = mainDic.ElementAt(mainDic.Count - 1).Value.Order + 1;
+                    }
+                    attribute = new ExcelColumnAttribute(o.Name, order);
+                    mainDic.Add(o, attribute);
+                }
+                else if (!attribute.Ignore)
                 {
                     mainDic.Add(o, attribute);
                 }
@@ -130,9 +140,54 @@ namespace SpireExcel.Extensions
         }
 
 
-     
 
 
+        public static Workbook AddSheet(this Workbook wb, DataTable data)
+        { 
+            string sheetName = data.TableName;
+            IExcelTypeFormater<Worksheet> defaultExcelTypeFormater = new SpireExcelTypeFormater();
+
+            Worksheet ws1 = wb.Worksheets.Add(sheetName);
+            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
+
+            var headerNames = new List<string>();
+            for (int i = 0; i < data.Columns.Count; i++)
+            {
+                headerNames.Add(data.Columns[i].ColumnName);
+            } 
+
+            IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
+            int row = 1;
+            int column = 1;
+
+            //表头行
+            foreach (var headerName in headerNames)
+            { 
+                defaultExcelExportFormater.SetHeaderCell()?.Invoke(ws1[row, column], headerName);
+                column++;
+            }
+
+            row++;
+
+            //数据行 
+            if (data != null && data.Rows.Count > 0)
+            {
+                for (int i = 0; i < data.Rows.Count; i++)
+                {
+                    column = 1;
+                    foreach (var headerName in headerNames)
+                    {
+                        var mainValue = data.Rows[i][headerName];
+                        defaultExcelExportFormater.SetBodyCell()?.Invoke(ws1[row, column], mainValue); 
+                        column++;
+                    }
+                    row++;
+
+                }
+            }
+            return wb;
+
+        }
 
         public static Workbook AddErrors(this Workbook wb, string sheetName, IList<ExportExcelError> errors, Action<CellRange, string> action = null)
         {

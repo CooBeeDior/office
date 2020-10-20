@@ -22,6 +22,13 @@ namespace SpireExcel
             return workbook.AddSheet<T>(data); 
         }
 
+        public Workbook Export(IList<object> data)
+        {
+            var workbook = _workbookBuilder.CreateWorkbook();
+
+            return workbook.AddSheet(data);
+        }
+
         public Stream ToStream(Workbook workbook)
         {
             MemoryStream sm = new MemoryStream();

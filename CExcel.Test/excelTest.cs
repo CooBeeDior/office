@@ -13,6 +13,9 @@ using OfficeOpenXml;
 using OfficeOpenXml.DataValidation;
 using OfficeOpenXml.Style;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+using System.Data;
+
 namespace CExcel.Test
 {
     [TestClass]
@@ -28,6 +31,9 @@ namespace CExcel.Test
             excelImportService = provider.GetService<IExcelImportService<ExcelPackage>>();
             workbookBuilder = provider.GetService<IWorkbookBuilder<ExcelPackage>>();
         }
+
+
+
         /// <summary>
         /// 导出
         /// </summary>
@@ -44,7 +50,7 @@ namespace CExcel.Test
                     Name = $"姓名{i}",
                     Sex = 2,
                     Email = $"aaa{i}@123.com",
-                    //CreateAt = DateTime.Now.AddDays(-1).AddMinutes(i),
+                    CreateAt = DateTime.Now.AddDays(-1).AddMinutes(i),
                 };
                 students.Add(student);
             }
@@ -52,8 +58,62 @@ namespace CExcel.Test
             {
                 var excelPackage = exportService.Export<Student>(students).AddSheet<Student>().AddSheet<Student>().AddSheet<Student>().AddSheet<Student>();
 
-
                 FileInfo fileInfo = new FileInfo("a.xlsx");
+                excelPackage.SaveAs(fileInfo);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+        }
+
+        [TestMethod]
+        public void ExportFromDatatable()
+        {
+
+            IList<Student> students = new List<Student>();
+            for (int i = 0; i < 100; i++)
+            {
+                Student student = new Student()
+                {
+                    Id = i,
+                    Name = $"姓名{i}",
+                    Sex = 2,
+                    Email = $"aaa{i}@123.com",
+                    CreateAt = DateTime.Now.AddDays(-1).AddMinutes(i),
+                };
+                students.Add(student);
+            }
+            try
+            {
+
+                DataTable tblDatas = new DataTable("Datas");
+                DataColumn dc = null;
+                dc = tblDatas.Columns.Add("ID", Type.GetType("System.Int32"));
+                dc.AutoIncrement = true;//自动增加
+                dc.AutoIncrementSeed = 1;//起始为1
+                dc.AutoIncrementStep = 1;//步长为1
+                dc.AllowDBNull = false;//
+
+                dc = tblDatas.Columns.Add("Product", Type.GetType("System.String"));
+                dc = tblDatas.Columns.Add("Version", Type.GetType("System.String"));
+                dc = tblDatas.Columns.Add("Description", Type.GetType("System.String"));
+
+                DataRow newRow;
+                newRow = tblDatas.NewRow();
+                newRow["Product"] = "大话西游";
+                newRow["Version"] = "2.0";
+                newRow["Description"] = "我很喜欢";
+                tblDatas.Rows.Add(newRow);
+
+                newRow = tblDatas.NewRow();
+                newRow["Product"] = "梦幻西游";
+                newRow["Version"] = "3.0";
+                newRow["Description"] = "比大话更幼稚";
+                tblDatas.Rows.Add(newRow);
+                var excelPackage = workbookBuilder.CreateWorkbook().AddSheet(tblDatas); 
+                FileInfo fileInfo = new FileInfo("c.xlsx");
                 excelPackage.SaveAs(fileInfo);
             }
             catch (Exception ex)
@@ -96,7 +156,7 @@ namespace CExcel.Test
         public void AddError()
         {
             try
-            { 
+            {
                 var fs = File.Open("a.xlsx", FileMode.Open);
                 var ep = workbookBuilder.CreateWorkbook(fs);
                 fs.Close();
@@ -126,28 +186,29 @@ namespace CExcel.Test
         /// <summary>
         /// 主键
         /// </summary>
-        [ExcelColumn("Id", 1)]
+        //[ExcelColumn("Id", 1)]
         public int Id { get; set; }
 
-        [ExcelColumn("姓名", 2)]
-        [EmailAddress(ErrorMessage = "不是邮箱格式")]
+        //[ExcelColumn("姓名")]
+        //[EmailAddress(ErrorMessage = "不是邮箱格式")]
         public string Name { get; set; }
 
 
-        [ExcelColumn("性别", 3, typeof(SexExcelTypeFormater), typeof(SexExcelImportFormater))]
+        //[ExcelColumn("性别", 3, typeof(SexExcelTypeFormater), typeof(SexExcelImportFormater))]
         public int Sex { get; set; }
 
 
-        [ExcelColumn("邮箱", 4)]
+        //[ExcelColumn("邮箱", 4)]
         [EmailAddress]
         public string Email { get; set; }
 
         //[ExportColumn("创建时间", 4, typeof(CreateAtExcelTypeFormater), typeof(CreateAtExcelImportFormater))]
-        //public DateTime CreateAt { get; set; }
+        [IngoreExcelColumn]
+        public DateTime CreateAt { get; set; }
     }
- 
 
- 
+
+
 
 
     public class StudentExcelTypeFormater : DefaultExcelTypeFormater
@@ -156,7 +217,8 @@ namespace CExcel.Test
         {
             return (s) =>
             {
-                var address = typeof(Student).GetPropertyAddress(nameof(Student.Email));
+                var address = typeof(Student).GetCellAddress(nameof(Student.Email));
+
                 address = $"{address}2:{address}1000";
                 var val2 = s.DataValidations.AddCustomValidation(address);
                 val2.ShowErrorMessage = true;

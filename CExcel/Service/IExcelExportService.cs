@@ -13,7 +13,7 @@ namespace CExcel.Service
     {
         TWorkbook Export<T>(IList<T> data = null) where T : class, new();
 
-
+        TWorkbook Export(IList<object> data);
         Stream ToStream(TWorkbook workbook);
     }
 }

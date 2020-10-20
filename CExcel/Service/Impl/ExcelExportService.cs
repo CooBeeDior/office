@@ -25,6 +25,11 @@ namespace CExcel.Service.Impl
             var ep = _workbookBuilder.CreateWorkbook();
             return ep.AddSheet(data);
         }
+        public ExcelPackage Export(IList<object> data)
+        {
+            var ep = _workbookBuilder.CreateWorkbook();
+            return ep.AddSheet(data);
+        }
 
         public Stream ToStream(ExcelPackage workbook)
         {
