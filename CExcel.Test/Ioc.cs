@@ -27,7 +27,7 @@ namespace CExcel.Test
             {
                 if (_provider == null)
                 {
-                    //lock()
+                    //lock(obj){}
                     _provider = service.BuildServiceProvider();
                 }
                 return _provider;
