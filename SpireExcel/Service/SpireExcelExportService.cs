@@ -1,4 +1,5 @@
-﻿using CExcel.Service;
+﻿using CExcel.Extensions;
+using CExcel.Service;
 using Spire.Xls;
 using SpireExcel.Extensions;
 using System;
@@ -10,7 +11,7 @@ namespace SpireExcel
 {
     public class SpireExcelExportService : IExcelExportService<Workbook>
     {
-        private readonly IWorkbookBuilder<Workbook> _workbookBuilder; 
+        private readonly IWorkbookBuilder<Workbook> _workbookBuilder;
         public SpireExcelExportService(IWorkbookBuilder<Workbook> workbookBuilder)
         {
             _workbookBuilder = workbookBuilder;
@@ -18,8 +19,8 @@ namespace SpireExcel
         public Workbook Export<T>(IList<T> data = null) where T : class, new()
         {
             var workbook = _workbookBuilder.CreateWorkbook();
-           
-            return workbook.AddSheet<T>(data); 
+
+            return workbook.AddSheet<T>(data);
         }
 
         public Workbook Export(IList<object> data)
@@ -28,6 +29,7 @@ namespace SpireExcel
 
             return workbook.AddSheet(data);
         }
+     
 
         public Stream ToStream(Workbook workbook)
         {

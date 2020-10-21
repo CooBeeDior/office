@@ -14,6 +14,7 @@ using System.Text;
 
 namespace CExcel.Extensions
 {
+
     public static class ExcelExtension
     {
         public static ExcelPackage AddSheet<T>(this ExcelPackage ep, IList<T> data = null) where T : class, new()
@@ -135,10 +136,6 @@ namespace CExcel.Extensions
             {
                 headerNames.Add(data.Columns[i].ColumnName);
             }
-
-
-
-
             IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
             int row = 1;
             int column = 1;
@@ -171,7 +168,49 @@ namespace CExcel.Extensions
             return ep;
 
         }
-    
+
+        public static ExcelPackage AddSheetHeader(this ExcelPackage ep, string sheetName, IList<HeaderInfo> headers)
+        {
+            if (string.IsNullOrEmpty(sheetName))
+            {
+                throw new ArgumentNullException(nameof(sheetName));
+            }
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+            ExcelWorkbook wb = ep.Workbook;
+            IExcelTypeFormater<ExcelWorksheet> defaultExcelTypeFormater = new DefaultExcelTypeFormater();
+
+            ExcelWorksheet ws1 = wb.Worksheets.Add(sheetName);
+            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
+
+
+            IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
+            int row = 1;
+            int column = 1;
+
+            //表头行
+            foreach (var item in headers)
+            {
+                if (item.Action == null)
+                {
+                    defaultExcelExportFormater.SetHeaderCell()(ws1.Cells[row, column], item.HeaderName);
+                }
+                else
+                {
+                    item.Action.Invoke(ws1.Cells[row, column], item.HeaderName);
+                }
+                column++;
+            }
+
+            row++;
+
+
+            return ep;
+
+        }
+
         public static ExcelPackage AddErrors<T>(this ExcelPackage ep, IList<ExportExcelError> errors, Action<ExcelRangeBase, string> action = null)
         {
             string sheetName = null;

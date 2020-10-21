@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CExcel.Extensions;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -14,6 +15,9 @@ namespace CExcel.Service
         TWorkbook Export<T>(IList<T> data = null) where T : class, new();
 
         TWorkbook Export(IList<object> data);
+
+
+
         Stream ToStream(TWorkbook workbook);
     }
 }

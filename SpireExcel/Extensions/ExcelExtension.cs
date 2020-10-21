@@ -115,9 +115,9 @@ namespace SpireExcel.Extensions
                 }
             }
             return wb;
-        } 
+        }
         public static Workbook AddSheet(this Workbook wb, DataTable data)
-        { 
+        {
             string sheetName = data.TableName;
             IExcelTypeFormater<Worksheet> defaultExcelTypeFormater = new SpireExcelTypeFormater();
 
@@ -128,7 +128,7 @@ namespace SpireExcel.Extensions
             for (int i = 0; i < data.Columns.Count; i++)
             {
                 headerNames.Add(data.Columns[i].ColumnName);
-            } 
+            }
 
             IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
             int row = 1;
@@ -136,7 +136,7 @@ namespace SpireExcel.Extensions
 
             //表头行
             foreach (var headerName in headerNames)
-            { 
+            {
                 defaultExcelExportFormater.SetHeaderCell()?.Invoke(ws1[row, column], headerName);
                 column++;
             }
@@ -152,13 +152,54 @@ namespace SpireExcel.Extensions
                     foreach (var headerName in headerNames)
                     {
                         var mainValue = data.Rows[i][headerName];
-                        defaultExcelExportFormater.SetBodyCell()?.Invoke(ws1[row, column], mainValue); 
+                        defaultExcelExportFormater.SetBodyCell()?.Invoke(ws1[row, column], mainValue);
                         column++;
                     }
                     row++;
 
                 }
             }
+            return wb;
+
+        }
+        public static Workbook AddSheetHeader(this Workbook wb, string sheetName, IList<SpireHeaderInfo> headers)
+        {
+            if (string.IsNullOrEmpty(sheetName))
+            {
+                throw new ArgumentNullException(nameof(sheetName));
+            }
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+            IExcelTypeFormater<Worksheet> defaultExcelTypeFormater = new SpireExcelTypeFormater();
+
+            Worksheet ws1 = wb.Worksheets.Add(sheetName);
+            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
+
+
+            IList<IExcelExportFormater<CellRange>> excelTypes = new List<IExcelExportFormater<CellRange>>();
+            IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
+            int row = 1;
+            int column = 1;
+
+            //表头行
+            foreach (var item in headers)
+            {
+                if (item.Action == null)
+                {
+                    defaultExcelExportFormater.SetHeaderCell()(ws1[row, column], item.HeaderName);
+                }
+                else
+                {
+                    item.Action.Invoke(ws1[row, column], item.HeaderName);
+                }
+                column++;
+            }
+
+            row++;
+
+
             return wb;
 
         }
@@ -181,7 +222,7 @@ namespace SpireExcel.Extensions
                     cell.Style.Color = Color.Red;
                     if (cell.Comment == null)
                     {
-                        cell.AddComment().Text = msg; 
+                        cell.AddComment().Text = msg;
                     }
                     else
                     {
