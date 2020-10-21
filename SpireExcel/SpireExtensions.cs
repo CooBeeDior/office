@@ -12,8 +12,7 @@ namespace SpireExcel
         public static IServiceCollection AddSpireExcelService(this IServiceCollection services)
         {
             services.AddSingleton<IExcelExportService<Workbook>, SpireExcelExportService>();
-            services.AddSingleton<IExcelImportService<Workbook>, SpireExcelImportService>();
-
+            services.AddSingleton<IExcelImportService<Workbook>, SpireExcelImportService>(); 
             services.AddSingleton<IExcelProvider<Workbook>, SpireExcelProvider>();
             services.AddSingleton<IWorkbookBuilder<Workbook>, SpireWorkbookBuilder>();
 

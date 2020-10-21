@@ -18,6 +18,15 @@ namespace SpireExcel
                 c.Style.VerticalAlignment = VerticalAlignType.Center;//垂直居中
                 #endregion
 
+      
+                c.AutoFitColumns();//单元格的宽度
+                c.AutoFitRows();//行高
+                c.Style.Borders[BordersLineType.EdgeLeft].LineStyle = LineStyleType.Thin;//边框
+                c.Style.Borders[BordersLineType.EdgeRight].LineStyle = LineStyleType.Thin;
+                c.Style.Borders[BordersLineType.EdgeTop].LineStyle = LineStyleType.Thin;
+                c.Style.Borders[BordersLineType.EdgeBottom].LineStyle = LineStyleType.Thin; 
+               
+         
                 //设置值
                 c.Value = o?.ToString();
             };
@@ -31,6 +40,13 @@ namespace SpireExcel
                 c.Style.HorizontalAlignment = HorizontalAlignType.Center;//水平居中
                 c.Style.VerticalAlignment = VerticalAlignType.Center;//垂直居中
                 #endregion
+
+                c.AutoFitColumns();//单元格的宽度
+                c.AutoFitRows();//行高
+                c.Style.Borders[BordersLineType.EdgeLeft].LineStyle = LineStyleType.Thin;//边框
+                c.Style.Borders[BordersLineType.EdgeRight].LineStyle = LineStyleType.Thin;
+                c.Style.Borders[BordersLineType.EdgeTop].LineStyle = LineStyleType.Thin;
+                c.Style.Borders[BordersLineType.EdgeBottom].LineStyle = LineStyleType.Thin;
 
                 #region 设置单元格字体样式
                 c.Style.Font.IsBold = true;//字体为粗体

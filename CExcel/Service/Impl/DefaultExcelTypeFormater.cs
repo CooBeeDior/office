@@ -18,7 +18,7 @@ namespace CExcel.Service.Impl
         {
             return (s) =>
             {
-
+                s.View.FreezePanes(2, 1); //冻结行
                 //#region 公式计算  
                 //s.Cells["D2:D5"].Formula = "B2*C2";//这是乘法的公式，意思是第二列乘以第三列的值赋值给第四列，这种方法比较简单明了
                 //s.Cells[6, 2, 6, 4].Formula = string.Format("SUBTOTAL(9,{0})", new ExcelAddress(2, 2, 5, 2).Address);//这是自动求和的方法，至于subtotal的用法你需要自己去了解了

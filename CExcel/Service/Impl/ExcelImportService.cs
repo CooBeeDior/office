@@ -1,5 +1,6 @@
 ﻿using CExcel.Attributes;
 using CExcel.Exceptions;
+using CExcel.Extensions;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
@@ -36,20 +37,8 @@ namespace CExcel.Service.Impl
             else
             {
                 ws1 = workbook.Workbook.Worksheets[sheetName];
-            } 
-
-            Dictionary<PropertyInfo, ExcelColumnAttribute> mainDic = new Dictionary<PropertyInfo, ExcelColumnAttribute>();
-
-            typeof(T).GetProperties().ToList().ForEach(o =>
-            {
-                var attribute = o.GetCustomAttribute<ExcelColumnAttribute>();
-                if (attribute != null)
-                {
-                    mainDic.Add(o, attribute);
-                }
-            });
-            //var mainPropertieList = mainDic.OrderBy(o => o.Value.Order).ToList();
-
+            }
+            var mainDic = typeof(T).ToColumnDic();
             int totalRows = ws1.Dimension.Rows;
             int totalColums = ws1.Dimension.Columns;
 
@@ -97,7 +86,7 @@ namespace CExcel.Service.Impl
                             }
                         }
                         if (flag)
-                        { 
+                        {
                             if (item.Value.Item1.ImportExcelType != null)
                             {
                                 var excelType = excelTypes.Where(o => o.GetType().FullName == item.Value.Item1.ImportExcelType.FullName).FirstOrDefault();

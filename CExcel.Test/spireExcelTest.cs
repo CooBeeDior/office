@@ -33,7 +33,7 @@ namespace CExcel.Test
         public void Export()
         {
             var aa = workbookBuilder.CreateWorkbook();
-       
+
             IList<Student> students = new List<Student>();
             for (int i = 0; i < 100; i++)
             {
@@ -87,7 +87,7 @@ namespace CExcel.Test
         }
 
 
-        [Excel("学生信息", true)]
+        [Excel("学生信息")]
         public class Student
         {
             /// <summary>
@@ -96,21 +96,22 @@ namespace CExcel.Test
             [ExcelColumn("Id", 1)]
             public int Id { get; set; }
 
-            [ExcelColumn("姓名", 2)]
+            //[ExcelColumn("姓名", 2)]
             //[EmailAddress(ErrorMessage = "不是邮箱格式")]
             public string Name { get; set; }
 
 
             [ExcelColumn("性别", 3, typeof(SexExcelTypeFormater), typeof(SexExcelImportFormater))]
+            [EmailAddress(ErrorMessage = "不是邮箱格式")]
             public int Sex { get; set; }
 
 
-            [ExcelColumn("邮箱", 4)]
+            //[ExcelColumn("邮箱", 4)]
             [EmailAddress]
             public string Email { get; set; }
 
-            //[ExportColumn("创建时间", 4, typeof(CreateAtExcelTypeFormater), typeof(CreateAtExcelImportFormater))]
-            //public DateTime CreateAt { get; set; }
+            [IngoreExcelColumn]
+            public DateTime CreateAt { get; set; }
         }
 
 
@@ -123,6 +124,7 @@ namespace CExcel.Test
             {
                 return (c, o) =>
                 {
+                    base.SetBodyCell()(c, o);
                     if (int.TryParse(o.ToString(), out int intValue))
                     {
                         if (intValue == 1)

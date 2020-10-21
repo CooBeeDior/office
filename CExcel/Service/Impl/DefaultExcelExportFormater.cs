@@ -36,7 +36,7 @@ namespace CExcel.Service.Impl
                 c.Style.Fill.PatternType = ExcelFillStyle.Solid;
                 c.Style.Fill.BackgroundColor.SetColor(Color.Green);
                 #endregion
-
+                c.AutoFitColumns();//单元格的宽度
                 #region 设置单元格边框
                 c.Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.FromArgb(191, 191, 191));//设置单元格所有边框
                 c.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;//单独设置单元格底部边框样式和颜色（上下左右均可分开设置）
@@ -57,6 +57,15 @@ namespace CExcel.Service.Impl
                 #region 设置单元格对齐方式   
                 c.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;//水平居中
                 c.Style.VerticalAlignment = ExcelVerticalAlignment.Center;//垂直居中
+                #endregion
+
+                c.AutoFitColumns();//单元格的宽度
+           
+
+                #region 设置单元格边框
+                c.Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.FromArgb(191, 191, 191));//设置单元格所有边框
+                c.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;//单独设置单元格底部边框样式和颜色（上下左右均可分开设置）
+                c.Style.Border.Bottom.Color.SetColor(Color.FromArgb(191, 191, 191));
                 #endregion
 
                 c.Value = o;

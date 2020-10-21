@@ -12,11 +12,8 @@ namespace SpireExcel
         private readonly ExcelVersion excelVersion = ExcelVersion.Version2016;
         public Workbook CreateWorkbook()
         {
-            var workbook = new Workbook() { Version = excelVersion };
-            for (int i = workbook.Worksheets.Count-1; i >=1 ; i--)
-            {
-                workbook.Worksheets.RemoveAt(i);
-            }
+            var workbook = new Workbook() { Version = excelVersion }; 
+            workbook.Worksheets.Clear();
             return workbook;
 
         }

@@ -1,16 +1,14 @@
-﻿using CExcel.Service;
+﻿using CExcel.Attributes;
+using CExcel.Exceptions;
+using CExcel.Extensions;
+using CExcel.Service;
 using Spire.Xls;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Text;
-using System.Reflection;
-using CExcel.Attributes;
-using System.Linq;
-using CExcel.Exceptions;
 using System.Drawing;
-using Spire.Xls.Core.Spreadsheet;
-using Spire.Pdf;
+using System.Linq;
+using System.Reflection;
 
 namespace SpireExcel.Extensions
 {
@@ -56,27 +54,7 @@ namespace SpireExcel.Extensions
             Worksheet ws1 = wb.Worksheets.Add(sheetName);
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
 
-            Dictionary<PropertyInfo, ExcelColumnAttribute> mainDic = new Dictionary<PropertyInfo, ExcelColumnAttribute>();
-
-            typeof(T).GetProperties().ToList().ForEach(o =>
-            {
-                var attribute = o.GetCustomAttribute<ExcelColumnAttribute>();
-                if (attribute == null)
-                {
-                    int order = 1;
-                    if (mainDic.Count - 1 > 0)
-                    {
-                        order = mainDic.ElementAt(mainDic.Count - 1).Value.Order + 1;
-                    }
-                    attribute = new ExcelColumnAttribute(o.Name, order);
-                    mainDic.Add(o, attribute);
-                }
-                else if (!attribute.Ignore)
-                {
-                    mainDic.Add(o, attribute);
-                }
-            });
-            var mainPropertieList = mainDic.OrderBy(o => o.Value.Order).ToList();
+            var mainPropertieList = typeof(T).ToColumnDic();
 
 
             IList<IExcelExportFormater<CellRange>> excelTypes = new List<IExcelExportFormater<CellRange>>();
@@ -137,11 +115,7 @@ namespace SpireExcel.Extensions
                 }
             }
             return wb;
-        }
-
-
-
-
+        } 
         public static Workbook AddSheet(this Workbook wb, DataTable data)
         { 
             string sheetName = data.TableName;
@@ -204,8 +178,7 @@ namespace SpireExcel.Extensions
             {
                 action = (cell, msg) =>
                 {
-                    cell.Style.FillPattern = ExcelPatternType.Solid;
-                    cell.Style.PatternColor = Color.Red;
+                    cell.Style.Color = Color.Red;
                     if (cell.Comment == null)
                     {
                         cell.AddComment().Text = msg; 

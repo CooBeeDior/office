@@ -217,19 +217,20 @@ namespace CExcel.Test
         {
             return (s) =>
             {
-                var address = typeof(Student).GetCellAddress(nameof(Student.Email));
+                base.SetExcelWorksheet()(s);
 
-                address = $"{address}2:{address}1000";
-                var val2 = s.DataValidations.AddCustomValidation(address);
-                val2.ShowErrorMessage = true;
-                val2.ShowInputMessage = true;
-                val2.PromptTitle = "自定义错误信息PromptTitle";
-                val2.Prompt = "自定义错误Prompt";
-                val2.ErrorTitle = "请输入邮箱ErrorTitle";
-                val2.Error = "请输入邮箱Error";
-                val2.ErrorStyle = ExcelDataValidationWarningStyle.stop;
-                var formula = val2.Formula;
-                formula.ExcelFormula = $"=COUNTIF({address},\"?*@*.*\")";
+                //var address = typeof(Student).GetCellAddress(nameof(Student.Email));
+                //address = $"{address}2:{address}1000";
+                //var val2 = s.DataValidations.AddCustomValidation(address);
+                //val2.ShowErrorMessage = true;
+                //val2.ShowInputMessage = true;
+                //val2.PromptTitle = "自定义错误信息PromptTitle";
+                //val2.Prompt = "自定义错误Prompt";
+                //val2.ErrorTitle = "请输入邮箱ErrorTitle";
+                //val2.Error = "请输入邮箱Error";
+                //val2.ErrorStyle = ExcelDataValidationWarningStyle.stop;
+                //var formula = val2.Formula;
+                //formula.ExcelFormula = $"=COUNTIF({address},\"?*@*.*\")";
             };
 
         }

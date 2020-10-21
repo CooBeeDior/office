@@ -171,6 +171,22 @@ namespace CExcel.Extensions
             return ep;
 
         }
+    
+        public static ExcelPackage AddErrors<T>(this ExcelPackage ep, IList<ExportExcelError> errors, Action<ExcelRangeBase, string> action = null)
+        {
+            string sheetName = null;
+            var excelAttribute = typeof(T).GetCustomAttribute<ExcelAttribute>();
+            if (excelAttribute != null)
+            {
+                sheetName = excelAttribute.SheetName;
+            }
+            else
+            {
+                sheetName = nameof(T);
+            }
+            return ep.AddErrors(sheetName, errors, action);
+        }
+
         public static ExcelPackage AddErrors(this ExcelPackage ep, string sheetName, IList<ExportExcelError> errors, Action<ExcelRangeBase, string> action = null)
         {
             if (errors == null || !errors.Any())
@@ -207,22 +223,6 @@ namespace CExcel.Extensions
             return ep;
 
         }
-
-        public static ExcelPackage AddErrors<T>(this ExcelPackage ep, IList<ExportExcelError> errors, Action<ExcelRangeBase, string> action = null)
-        {
-            string sheetName = null;
-            var excelAttribute = typeof(T).GetCustomAttribute<ExcelAttribute>();
-            if (excelAttribute != null)
-            {
-                sheetName = excelAttribute.SheetName;
-            }
-            else
-            {
-                sheetName = nameof(T);
-            }
-            return ep.AddErrors(sheetName, errors, action);
-        }
-
 
 
         public static List<KeyValuePair<PropertyInfo, ExcelColumnAttribute>> ToColumnDic(this Type @type)

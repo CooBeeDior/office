@@ -1,5 +1,6 @@
 ﻿using CExcel.Attributes;
 using CExcel.Exceptions;
+using CExcel.Extensions;
 using CExcel.Service;
 using Spire.Xls;
 using SpireExcel.Extensions;
@@ -36,17 +37,7 @@ namespace SpireExcel
                 ws1 = workbook.Worksheets[sheetName];
             }
 
-            Dictionary<PropertyInfo, ExcelColumnAttribute> mainDic = new Dictionary<PropertyInfo, ExcelColumnAttribute>();
-
-            typeof(T).GetProperties().ToList().ForEach(o =>
-            {
-                var attribute = o.GetCustomAttribute<ExcelColumnAttribute>();
-                if (attribute != null)
-                {
-                    mainDic.Add(o, attribute);
-                }
-            });
-            //var mainPropertieList = mainDic.OrderBy(o => o.Value.Order).ToList();
+            var mainDic = typeof(T).ToColumnDic();
 
             int totalRows = ws1.Rows.Count();
             int totalColums = ws1.Columns.Count();
