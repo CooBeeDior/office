@@ -209,7 +209,7 @@ namespace CExcel.Extensions
             string sheetName = data.TableName;
             IExcelTypeFormater<ExcelWorksheet> defaultExcelTypeFormater = new DefaultExcelTypeFormater();
 
-            ExcelWorksheet ws1 = wb.Worksheets.Add(sheetName);
+            ExcelWorksheet ws1 = wb.Worksheets[sheetName];
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
 
 
