@@ -39,7 +39,7 @@ namespace CExcel.Test
         /// </summary>
         [TestMethod]
         public void Export()
-        { 
+        {
             IList<Student> students = new List<Student>();
             for (int i = 0; i < 100; i++)
             {
@@ -76,7 +76,7 @@ namespace CExcel.Test
             var ep = workbookBuilder.CreateWorkbook().AddSheetHeader("cc", new List<HeaderInfo>()
             {
                new HeaderInfo("111",(cell,o)=>
-               { cell.Value=o;             
+               { cell.Value=o;
                    cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
                 cell.Style.Fill.BackgroundColor.SetColor(Color.Red); } ),
                          new HeaderInfo("222") ,
@@ -87,7 +87,7 @@ namespace CExcel.Test
             ep.SaveAs(fileInfo);
         }
 
-            [TestMethod]
+        [TestMethod]
         public void ExportFromDatatable()
         {
 
@@ -131,7 +131,7 @@ namespace CExcel.Test
                 newRow["Version"] = "3.0";
                 newRow["Description"] = "比大话更幼稚";
                 tblDatas.Rows.Add(newRow);
-                var excelPackage = workbookBuilder.CreateWorkbook().AddSheet(tblDatas); 
+                var excelPackage = workbookBuilder.CreateWorkbook().AddSheet(tblDatas);
                 FileInfo fileInfo = new FileInfo("c.xlsx");
                 excelPackage.SaveAs(fileInfo);
             }
@@ -208,8 +208,8 @@ namespace CExcel.Test
         //[ExcelColumn("Id", 1)]
         public int Id { get; set; }
 
-        //[ExcelColumn("姓名")]
-        //[EmailAddress(ErrorMessage = "不是邮箱格式")]
+        [ExcelColumn("姓名")]
+        [EmailAddress(ErrorMessage = "不是邮箱格式")]
         public string Name { get; set; }
 
 

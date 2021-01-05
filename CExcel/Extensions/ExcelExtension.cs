@@ -1,5 +1,6 @@
 ﻿using CExcel.Attributes;
 using CExcel.Exceptions;
+using CExcel.Models;
 using CExcel.Service;
 using CExcel.Service.Impl;
 using OfficeOpenXml;
@@ -123,7 +124,6 @@ namespace CExcel.Extensions
 
         public static ExcelPackage AddSheet(this ExcelPackage ep, DataTable data)
         {
-
             ExcelWorkbook wb = ep.Workbook;
             string sheetName = data.TableName;
             IExcelTypeFormater<ExcelWorksheet> defaultExcelTypeFormater = new DefaultExcelTypeFormater();
@@ -163,6 +163,107 @@ namespace CExcel.Extensions
                     }
                     row++;
 
+                }
+            }
+            return ep;
+
+        }
+
+        public static ExcelPackage AddSheet(this ExcelPackage ep, string sheetName, IList<HeaderInfo> headers, IList<IList<ExportCellValue<ExcelRangeBase>>> data)
+        {
+            ep.AddSheetHeader(sheetName, headers);
+            ExcelWorkbook wb = ep.Workbook;
+            ExcelWorksheet ws = wb.Worksheets[sheetName];
+            if (data != null && data.Any())
+            {
+                IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
+                int row = ws.Dimension.Rows + 1;
+                foreach (var dic in data)
+                {
+
+                    int column = 1;
+                    foreach (var item in dic)
+                    {
+                        var mainValue = item.Value;
+                        if (item.ExportFormater != null)
+                        {
+                            item.ExportFormater.SetBodyCell()?.Invoke(ws.Cells[row, column], mainValue);
+                        }
+                        else
+                        {
+                            defaultExcelExportFormater.SetBodyCell()?.Invoke(ws.Cells[row, column], mainValue);
+                        }
+                        column++;
+                    }
+
+                    row++;
+                }
+            }
+            return ep;
+
+        }
+
+        public static ExcelPackage AddBody(this ExcelPackage ep, DataTable data)
+        {
+            ExcelWorkbook wb = ep.Workbook;
+            string sheetName = data.TableName;
+            IExcelTypeFormater<ExcelWorksheet> defaultExcelTypeFormater = new DefaultExcelTypeFormater();
+
+            ExcelWorksheet ws1 = wb.Worksheets.Add(sheetName);
+            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
+
+
+            IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
+
+            int row = ws1.Dimension.Rows + 1;
+
+            //数据行 
+            if (data != null && data.Rows.Count > 0)
+            {
+                for (int i = 0; i < data.Rows.Count; i++)
+                {
+                    int column = 1;
+                    for (int j = 0; i < data.Columns.Count; j++)
+                    {
+                        var mainValue = data.Rows[i][j];
+                        defaultExcelExportFormater.SetBodyCell()?.Invoke(ws1.Cells[row, column], mainValue);
+                        column++;
+                    }
+                    row++;
+
+                }
+            }
+            return ep;
+
+        }
+
+        public static ExcelPackage AddBody(this ExcelPackage ep, string sheetName, IList<IList<ExportCellValue<ExcelRangeBase>>> data)
+        { 
+            ExcelWorkbook wb = ep.Workbook;
+            ExcelWorksheet ws = wb.Worksheets[sheetName];
+            if (data != null && data.Any())
+            {
+                IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
+                int row = ws.Dimension.Rows + 1;
+                foreach (var dic in data)
+                {
+
+                    int column = 1;
+                    foreach (var item in dic)
+                    {
+                        var mainValue = item.Value;
+                        if (item.ExportFormater != null)
+                        {
+                            item.ExportFormater.SetBodyCell()?.Invoke(ws.Cells[row, column], mainValue);
+                        }
+                        else
+                        {
+                            defaultExcelExportFormater.SetBodyCell()?.Invoke(ws.Cells[row, column], mainValue);
+                        }
+                        column++;
+                    }
+
+                    row++;
                 }
             }
             return ep;
