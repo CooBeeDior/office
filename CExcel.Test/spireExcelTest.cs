@@ -49,7 +49,7 @@ namespace CExcel.Test
             }
             try
             {
-                var excelPackage = exportService.Export<Student>(students);//.AddSheet<Student>().AddSheet<Student>().AddSheet<Student>().AddSheet<Student>();
+                var excelPackage = exportService.Export<Student>(students).AddSheet<Student>(students).AddSheet<Student>().AddSheet<Student>().AddSheet<Student>();
 
 
                 excelPackage.SaveToFile("spirea.xlsx", FileFormat.Version2016);

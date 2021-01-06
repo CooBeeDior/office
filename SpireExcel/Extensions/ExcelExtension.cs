@@ -51,7 +51,11 @@ namespace SpireExcel.Extensions
                     defaultExcelTypeFormater = new SpireExcelTypeFormater();
                 }
             }
-            Worksheet ws1 = wb.Worksheets.Add(sheetName);
+            Worksheet ws1 = wb.Worksheets[sheetName];
+            if (ws1 == null)
+            {
+                ws1 = wb.Worksheets.Add(sheetName);
+            }
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
 
             var mainPropertieList = typeof(T).ToColumnDic();
@@ -59,7 +63,7 @@ namespace SpireExcel.Extensions
 
             IList<IExcelExportFormater<CellRange>> excelTypes = new List<IExcelExportFormater<CellRange>>();
             IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-            int row = 1;
+            int row = (ws1.CellRecords.LastRow == -1 ? 0 : ws1.CellRecords.LastRow) + 1;
             int column = 1;
 
             //表头行
@@ -121,7 +125,11 @@ namespace SpireExcel.Extensions
             string sheetName = data.TableName;
             IExcelTypeFormater<Worksheet> defaultExcelTypeFormater = new SpireExcelTypeFormater();
 
-            Worksheet ws1 = wb.Worksheets.Add(sheetName);
+            Worksheet ws1 = wb.Worksheets[sheetName];
+            if (ws1 == null)
+            {
+                ws1 = wb.Worksheets.Add(sheetName);
+            }
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
 
             var headerNames = new List<string>();
@@ -131,7 +139,7 @@ namespace SpireExcel.Extensions
             }
 
             IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-            int row = 1;
+            int row = (ws1.CellRecords.LastRow == -1 ? 0 : ws1.CellRecords.LastRow) + 1;
             int column = 1;
 
             //表头行
@@ -174,13 +182,17 @@ namespace SpireExcel.Extensions
             }
             IExcelTypeFormater<Worksheet> defaultExcelTypeFormater = new SpireExcelTypeFormater();
 
-            Worksheet ws1 = wb.Worksheets.Add(sheetName);
+            Worksheet ws1 = wb.Worksheets[sheetName];
+            if (ws1 == null)
+            {
+                ws1 = wb.Worksheets.Add(sheetName);
+            }
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
 
 
             IList<IExcelExportFormater<CellRange>> excelTypes = new List<IExcelExportFormater<CellRange>>();
             IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-            int row = 1;
+            int row = (ws1.CellRecords.LastRow == -1 ? 0 : ws1.CellRecords.LastRow) + 1;
             int column = 1;
 
             //表头行

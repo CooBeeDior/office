@@ -18,4 +18,10 @@
     <ProjectReference Include="..\SpireExcel\SpireExcel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="images\a.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -15,6 +15,7 @@ using OfficeOpenXml.Style;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using System.Data;
+using CExcel.Models;
 
 namespace CExcel.Test
 {
@@ -67,6 +68,8 @@ namespace CExcel.Test
 
         }
 
+
+
         /// <summary>
         /// 导出
         /// </summary>
@@ -75,15 +78,55 @@ namespace CExcel.Test
         {
             var headers = new List<HeaderInfo>()
             {
-               new HeaderInfo("111",(cell,o)=>
+               new HeaderInfo("姓名",(cell,o)=>
                { cell.Value=o;
                    cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
                 cell.Style.Fill.BackgroundColor.SetColor(Color.Red); } ),
-                         new HeaderInfo("222") ,
-                                   new HeaderInfo("333") ,
+                         new HeaderInfo("性别") ,                         new HeaderInfo("性别") ,                         new HeaderInfo("性别") ,                         new HeaderInfo("性别") ,
+                                   new HeaderInfo("头像") ,
 
             };
-            var ep = workbookBuilder.CreateWorkbook().AddSheetHeader("cc", headers).AddSheetHeader("cc", headers);
+            IList<IList<ExportCellValue<ExcelRangeBase>>> list = new List<IList<ExportCellValue<ExcelRangeBase>>>();
+            for (int i = 0; i < 10; i++)
+            {
+                IList<ExportCellValue<ExcelRangeBase>> cellValues = new List<ExportCellValue<ExcelRangeBase>>();
+                cellValues.Add(new ExportCellValue<ExcelRangeBase>()
+                {
+                    Value = $"姓名{i}",
+
+                });
+
+                cellValues.Add(new ExportCellValue<ExcelRangeBase>()
+                {
+                    Value = i%3,
+                    ExportFormater=new SexExcelTypeFormater()
+                });
+                cellValues.Add(new ExportCellValue<ExcelRangeBase>()
+                {
+                    Value = i % 3,
+                    ExportFormater = new SexExcelTypeFormater()
+                });
+                cellValues.Add(new ExportCellValue<ExcelRangeBase>()
+                {
+                    Value = i % 3,
+                    ExportFormater = new SexExcelTypeFormater()
+                });
+                cellValues.Add(new ExportCellValue<ExcelRangeBase>()
+                {
+                    Value = i % 3,
+                    ExportFormater = new SexExcelTypeFormater()
+                });
+
+                cellValues.Add(new ExportCellValue<ExcelRangeBase>()
+                {
+                    Value = $"http://www.baidu.com/{i}",
+                    ExportFormater=new ImageExcelTypeFormater()
+                });
+                list.Add(cellValues);
+
+            } 
+
+            var ep = workbookBuilder.CreateWorkbook().AddSheetHeader("cc", headers).AddBody("cc", list);
             FileInfo fileInfo = new FileInfo("d.xlsx");
             ep.SaveAs(fileInfo);
         }
@@ -154,8 +197,9 @@ namespace CExcel.Test
             try
             {
                 using (var fs = File.Open("a.xlsx", FileMode.Open))
+                {
                     ep = workbookBuilder.CreateWorkbook(fs);
-
+                }
                 var result = excelImportService.Import<Student>(ep);
 
             }
@@ -312,5 +356,26 @@ namespace CExcel.Test
                 return 0;
             }
         }
+    }
+
+
+    public class ImageExcelTypeFormater : DefaultExcelExportFormater
+    {
+        public override Action<ExcelRangeBase, object> SetBodyCell()
+        {
+            return (c, o) =>
+            {
+                var fs = File.OpenRead(@"images/a.jpg");
+                byte[] buffer = new byte[fs.Length];
+                fs.Read(buffer, 0, buffer.Length);
+                fs.Close();
+                fs.Dispose();
+                c.Worksheet.InsertImage(buffer,c,true);
+
+                c.Value = o;
+            };
+        }
+
+
     }
 }
