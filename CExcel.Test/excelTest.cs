@@ -73,7 +73,7 @@ namespace CExcel.Test
         [TestMethod]
         public void ExportHeader()
         {
-            var ep = workbookBuilder.CreateWorkbook().AddSheetHeader("cc", new List<HeaderInfo>()
+            var headers = new List<HeaderInfo>()
             {
                new HeaderInfo("111",(cell,o)=>
                { cell.Value=o;
@@ -82,7 +82,8 @@ namespace CExcel.Test
                          new HeaderInfo("222") ,
                                    new HeaderInfo("333") ,
 
-            });
+            };
+            var ep = workbookBuilder.CreateWorkbook().AddSheetHeader("cc", headers).AddSheetHeader("cc", headers);
             FileInfo fileInfo = new FileInfo("d.xlsx");
             ep.SaveAs(fileInfo);
         }

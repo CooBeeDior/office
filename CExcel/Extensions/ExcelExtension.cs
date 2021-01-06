@@ -56,14 +56,19 @@ namespace CExcel.Extensions
                     defaultExcelTypeFormater = new DefaultExcelTypeFormater();
                 }
             }
-            ExcelWorksheet ws1 = wb.Worksheets.Add(sheetName);
+            ExcelWorksheet ws1 = wb.Worksheets[sheetName];
+            if (ws1 == null)
+            {
+                ws1 = wb.Worksheets.Add(sheetName);
+            }
+
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
 
             var mainPropertieList = typeof(T).ToColumnDic();
 
             IList<IExcelExportFormater<ExcelRangeBase>> excelTypes = new List<IExcelExportFormater<ExcelRangeBase>>();
             IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
-            int row = 1;
+            int row = (ws1?.Dimension?.Rows ?? 0) + 1;
             int column = 1;
 
             //表头行
@@ -128,7 +133,11 @@ namespace CExcel.Extensions
             string sheetName = data.TableName;
             IExcelTypeFormater<ExcelWorksheet> defaultExcelTypeFormater = new DefaultExcelTypeFormater();
 
-            ExcelWorksheet ws1 = wb.Worksheets.Add(sheetName);
+            ExcelWorksheet ws1 = wb.Worksheets[sheetName];
+            if (ws1 == null)
+            {
+                ws1 = wb.Worksheets.Add(sheetName);
+            }
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
 
             var headerNames = new List<string>();
@@ -137,7 +146,7 @@ namespace CExcel.Extensions
                 headerNames.Add(data.Columns[i].ColumnName);
             }
             IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
-            int row = 1;
+            int row = (ws1?.Dimension?.Rows ?? 0) + 1;
             int column = 1;
 
             //表头行
@@ -174,10 +183,14 @@ namespace CExcel.Extensions
             ep.AddSheetHeader(sheetName, headers);
             ExcelWorkbook wb = ep.Workbook;
             ExcelWorksheet ws = wb.Worksheets[sheetName];
+            if (ws == null)
+            {
+                ws = wb.Worksheets.Add(sheetName);
+            }
             if (data != null && data.Any())
             {
                 IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
-                int row = ws.Dimension.Rows + 1;
+                int row = (ws?.Dimension?.Rows ?? 0) + 1;
                 foreach (var dic in data)
                 {
 
@@ -210,12 +223,16 @@ namespace CExcel.Extensions
             IExcelTypeFormater<ExcelWorksheet> defaultExcelTypeFormater = new DefaultExcelTypeFormater();
 
             ExcelWorksheet ws1 = wb.Worksheets[sheetName];
+            if (ws1 == null)
+            {
+                ws1 = wb.Worksheets.Add(sheetName);
+            }
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
 
 
             IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
 
-            int row = ws1.Dimension.Rows + 1;
+            int row = (ws1?.Dimension?.Rows ?? 0) + 1;
 
             //数据行 
             if (data != null && data.Rows.Count > 0)
@@ -238,13 +255,17 @@ namespace CExcel.Extensions
         }
 
         public static ExcelPackage AddBody(this ExcelPackage ep, string sheetName, IList<IList<ExportCellValue<ExcelRangeBase>>> data)
-        { 
+        {
             ExcelWorkbook wb = ep.Workbook;
             ExcelWorksheet ws = wb.Worksheets[sheetName];
+            if (ws == null)
+            {
+                ws = wb.Worksheets.Add(sheetName);
+            }
             if (data != null && data.Any())
             {
                 IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
-                int row = ws.Dimension.Rows + 1;
+                int row = (ws?.Dimension?.Rows ?? 0) + 1;
                 foreach (var dic in data)
                 {
 
@@ -283,12 +304,16 @@ namespace CExcel.Extensions
             ExcelWorkbook wb = ep.Workbook;
             IExcelTypeFormater<ExcelWorksheet> defaultExcelTypeFormater = new DefaultExcelTypeFormater();
 
-            ExcelWorksheet ws1 = wb.Worksheets.Add(sheetName);
+            ExcelWorksheet ws1 = wb.Worksheets[sheetName];
+            if (ws1 == null)
+            {
+                ws1 = wb.Worksheets.Add(sheetName);
+            }
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
 
 
             IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
-            int row = 1;
+            int row = (ws1?.Dimension?.Rows ?? 0) + 1;
             int column = 1;
 
             //表头行
