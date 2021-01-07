@@ -19,7 +19,7 @@ namespace CExcel.Service.Impl
             return (s) =>
             {
                 s.View.FreezePanes(2, 1); //冻结行
-                s.Cells.Style.ShrinkToFit = true;//单元格自动适应大小
+                //s.Cells.Style.ShrinkToFit = true;//单元格自动适应大小
                 //s.Row(1).Height = 44;//设置行高
                 //s.Row(1).CustomHeight = true;//自动调整行高
 

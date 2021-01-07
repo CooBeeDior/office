@@ -255,7 +255,9 @@ namespace CExcel.Extensions
 
         }
 
-        public static ExcelPackage AddBody(this ExcelPackage ep, string sheetName, IList<IList<ExportCellValue<ExcelRangeBase>>> data)
+
+
+        public static ExcelPackage AddBody(this ExcelPackage ep, string sheetName, IList<IDictionary<string, object>> data)
         {
             ExcelWorkbook wb = ep.Workbook;
             ExcelWorksheet ws = wb.Worksheets[sheetName];
@@ -273,53 +275,47 @@ namespace CExcel.Extensions
                     int column = 1;
                     foreach (var item in dic)
                     {
-                        var mainValue = item.Value;
-                        if (item.ExportFormater != null)
+                        if (item.Value is ExportCellValue<ExcelRangeBase> cellValue)
                         {
-                            item.ExportFormater.SetBodyCell()?.Invoke(ws.Cells[row, column], mainValue);
+                            if (cellValue?.ExportFormater != null)
+                            {
+                                cellValue?.ExportFormater.SetBodyCell()?.Invoke(ws.Cells[row, column], cellValue.Value);
+                            }
+                            else
+                            {
+                                defaultExcelExportFormater.SetBodyCell()?.Invoke(ws.Cells[row, column], cellValue.Value);
+                            }
+
                         }
                         else
                         {
-                            defaultExcelExportFormater.SetBodyCell()?.Invoke(ws.Cells[row, column], mainValue);
+                            var valuePropertyInfo = item.Value.GetType().GetProperties().Where(o => o.Name.Equals("Value", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                            var value = valuePropertyInfo?.GetValue(item.Value);
+                            if (valuePropertyInfo == null || value == null)
+                            {
+                                throw new Exception("Value值不能为空");
+                            }
+                            var formatterPropertyInfo = item.Value.GetType().GetProperties().Where(o => typeof(IExcelExportFormater<ExcelRangeBase>).IsAssignableFrom(o.PropertyType)).FirstOrDefault();
+                            if (formatterPropertyInfo != null)
+                            {
+                                var formatterValue = formatterPropertyInfo.GetValue(item.Value) as IExcelExportFormater<ExcelRangeBase>;
+                                if (formatterValue != null)
+                                {
+                                    formatterValue.SetBodyCell()?.Invoke(ws.Cells[row, column], value);
+                                }
+                                else
+                                {
+                                    defaultExcelExportFormater.SetBodyCell()?.Invoke(ws.Cells[row, column], value);
+                                }
+                            }
+                            else
+                            {
+                                defaultExcelExportFormater.SetBodyCell()?.Invoke(ws.Cells[row, column], value);
+                            }
+
                         }
-                        column++;
-                    }
-
-                    row++;
-                }
-            }
-            return ep;
-
-        }
 
 
-        public static ExcelPackage AddBody(this ExcelPackage ep, string sheetName, IList<IDictionary<string, ExportCellValue<ExcelRangeBase>>> data)
-        {
-            ExcelWorkbook wb = ep.Workbook;
-            ExcelWorksheet ws = wb.Worksheets[sheetName];
-            if (ws == null)
-            {
-                ws = wb.Worksheets.Add(sheetName);
-            }
-            if (data != null && data.Any())
-            {
-                IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
-                int row = (ws?.Dimension?.Rows ?? 0) + 1;
-                foreach (var dic in data)
-                {
-
-                    int column = 1;
-                    foreach (var item in dic)
-                    {
-                        var mainValue = item.Value;
-                        if (item.Value?.ExportFormater != null)
-                        {
-                            item.Value?.ExportFormater.SetBodyCell()?.Invoke(ws.Cells[row, column], mainValue);
-                        }
-                        else
-                        {
-                            defaultExcelExportFormater.SetBodyCell()?.Invoke(ws.Cells[row, column], mainValue);
-                        }
                         column++;
                     }
 
@@ -440,7 +436,15 @@ namespace CExcel.Extensions
             InsertImage(worksheet, imageBytes, worksheet.Cells[rowNum, columnNum], autofit);
         }
 
-        public static void InsertImage(this ExcelWorksheet worksheet, byte[] imageBytes, ExcelRangeBase cell, bool autofit = true)
+        /// <summary>
+        /// 插入图片
+        /// </summary>
+        /// <param name="worksheet"></param>
+        /// <param name="imageBytes"></param>
+        /// <param name="rowNum"></param>
+        /// <param name="columnNum"></param>
+        /// <param name="autofit"></param>
+        public static void InsertImage(this ExcelWorksheet worksheet, byte[] imageBytes, ExcelRangeBase cell, bool autofit)
         {
             using (var image = Image.FromStream(new MemoryStream(imageBytes)))
             {
@@ -463,7 +467,6 @@ namespace CExcel.Extensions
                 picture.SetPosition(cell.Start.Row - 1, rowOffsetPixels, cell.Start.Column - 1, columnOffsetPixels);
             }
         }
-
         #region private
         /// <summary>
         /// 获取自适应调整后的图片尺寸
@@ -483,14 +486,14 @@ namespace CExcel.Extensions
             {
                 //图片高度固定,宽度自适应
                 adjustImageHeightInPix = cellRowHeightInPix;
-                double ratio = (1) * adjustImageHeightInPix / imageHeightInPix;
+                double ratio = (1.0) * adjustImageHeightInPix / imageHeightInPix;
                 adjustImageWidthInPix = (int)(imageWidthInPix * ratio);
             }
             else
             {
                 //图片宽度固定,高度自适应
                 adjustImageWidthInPix = cellColumnWidthInPix;
-                double ratio = (1) * adjustImageWidthInPix / imageWidthInPix;
+                double ratio = (1.0) * adjustImageWidthInPix / imageWidthInPix;
                 adjustImageHeightInPix = (int)(imageHeightInPix * ratio);
             }
             return new Tuple<int, int>(adjustImageWidthInPix, adjustImageHeightInPix);
@@ -520,7 +523,7 @@ namespace CExcel.Extensions
             using (Graphics graphics = Graphics.FromHwnd(IntPtr.Zero))
             {
                 float dpiY = graphics.DpiY;
-                return (int)(rowHeight * (1.0 / 56) * dpiY);
+                return (int)(rowHeight * (1.0 / 70) * dpiY);
             }
         }
 
@@ -538,6 +541,11 @@ namespace CExcel.Extensions
                 return g.MeasureString(s, font, int.MaxValue, StringFormat.GenericTypographic).Width;
             }
         }
+
+
+
+
+
 
         #endregion
         public static List<KeyValuePair<PropertyInfo, ExcelColumnAttribute>> ToColumnDic(this Type @type)

@@ -86,41 +86,41 @@ namespace CExcel.Test
                                    new HeaderInfo("Í·Ïñ") ,
 
             };
-            IList<IList<ExportCellValue<ExcelRangeBase>>> list = new List<IList<ExportCellValue<ExcelRangeBase>>>();
+            IList<IDictionary<string,object>> list = new List<IDictionary<string, object>>();
             for (int i = 0; i < 10; i++)
             {
-                IList<ExportCellValue<ExcelRangeBase>> cellValues = new List<ExportCellValue<ExcelRangeBase>>();
-                cellValues.Add(new ExportCellValue<ExcelRangeBase>()
+                Dictionary<string,object> cellValues = new Dictionary<string, object>();
+                cellValues.Add("name",new  
                 {
                     Value = $"ÐÕÃû{i}",
 
                 });
 
-                cellValues.Add(new ExportCellValue<ExcelRangeBase>()
+                cellValues.Add("sex1", new  
                 {
                     Value = i%3,
                     ExportFormater=new SexExcelTypeFormater()
                 });
-                cellValues.Add(new ExportCellValue<ExcelRangeBase>()
+                cellValues.Add("sex2", new 
                 {
                     Value = i % 3,
                     ExportFormater = new SexExcelTypeFormater()
                 });
-                cellValues.Add(new ExportCellValue<ExcelRangeBase>()
+                cellValues.Add("sex3", new 
                 {
                     Value = i % 3,
                     ExportFormater = new SexExcelTypeFormater()
                 });
-                cellValues.Add(new ExportCellValue<ExcelRangeBase>()
+                cellValues.Add("sex4", new  
                 {
                     Value = i % 3,
                     ExportFormater = new SexExcelTypeFormater()
                 });
 
-                cellValues.Add(new ExportCellValue<ExcelRangeBase>()
+                cellValues.Add("touxiang", new 
                 {
                     Value = $"http://www.baidu.com/{i}",
-                    ExportFormater=new ImageExcelTypeFormater()
+                   aa=  new ImageExcelTypeFormater()
                 });
                 list.Add(cellValues);
 
@@ -365,6 +365,13 @@ namespace CExcel.Test
         {
             return (c, o) =>
             {
+                c.Style.Font.Size = 12;
+                c.Style.Font.UnderLine = true;
+                c.Style.Font.Color.SetColor(Color.Blue);
+                c.Hyperlink = new Uri(o.ToString(), UriKind.Absolute);
+                c.Value = o;
+
+
                 var fs = File.OpenRead(@"images/a.jpg");
                 byte[] buffer = new byte[fs.Length];
                 fs.Read(buffer, 0, buffer.Length);
@@ -372,7 +379,7 @@ namespace CExcel.Test
                 fs.Dispose();
                 c.Worksheet.InsertImage(buffer,c,true);
 
-                c.Value = o;
+             
             };
         }
 
