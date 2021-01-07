@@ -86,38 +86,33 @@ namespace CExcel.Test
                                    new HeaderInfo("Í·Ïñ") ,
 
             };
-            IList<IDictionary<string,object>> list = new List<IDictionary<string, object>>();
+            IList<IList<object>> list = new List<IList< object>>();
             for (int i = 0; i < 10; i++)
             {
-                Dictionary<string,object> cellValues = new Dictionary<string, object>();
-                cellValues.Add("name",new  
+                IList<object> cellValues = new List< object>();
+                cellValues.Add(new  
                 {
                     Value = $"ÐÕÃû{i}",
 
                 });
 
-                cellValues.Add("sex1", new  
+                cellValues.Add( new  
                 {
                     Value = i%3,
                     ExportFormater=new SexExcelTypeFormater()
                 });
-                cellValues.Add("sex2", new 
+                cellValues.Add( new 
                 {
                     Value = i % 3,
                     ExportFormater = new SexExcelTypeFormater()
-                });
-                cellValues.Add("sex3", new 
-                {
-                    Value = i % 3,
-                    ExportFormater = new SexExcelTypeFormater()
-                });
-                cellValues.Add("sex4", new  
+                });            
+                cellValues.Add( new  
                 {
                     Value = i % 3,
                     ExportFormater = new SexExcelTypeFormater()
                 });
 
-                cellValues.Add("touxiang", new 
+                cellValues.Add( new 
                 {
                     Value = $"http://www.baidu.com/{i}",
                    aa=  new ImageExcelTypeFormater()
