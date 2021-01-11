@@ -1,46 +1,47 @@
 ﻿using CExcel.Attributes;
 using CExcel.Exceptions;
 using CExcel.Extensions;
-using OfficeOpenXml;
+using CExcel.Service;
+using NPOI.SS.UserModel;
+using NpoiExcel.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace CExcel.Service.Impl
+namespace NpoiExcel.Service
 {
     /// <summary>
     /// 导入服务
     /// </summary>
     /// <exception cref="ExportExcelException">导出数据校验不通过</exception>
-    public class ExcelImportService : IExcelImportService<ExcelPackage>
+    public class NpoiExcelImportService : IExcelImportService<IWorkbook>
     {
-        public IList<T> Import<T>(ExcelPackage workbook, string sheetName = null) where T : class, new()
+        public IList<T> Import<T>(IWorkbook workbook, string sheetName = null) where T : class, new()
         {
-            ExcelWorksheet sheet = null;
+            ISheet sheet = null;
             if (string.IsNullOrEmpty(sheetName))
             {
                 var arrtibute = typeof(T).GetCustomAttribute<ExcelAttribute>();
                 if (arrtibute != null)
                 {
-                    sheet = workbook.Workbook.Worksheets[arrtibute.SheetName];
+                    sheet = workbook.GetSheet(sheetName);
                 }
                 else
                 {
-                    sheet = workbook.Workbook.Worksheets[1];
+                    sheet = workbook.GetSheet(sheetName);
                 }
 
             }
             else
             {
-                sheet = workbook.Workbook.Worksheets[sheetName];
+                sheet = workbook.GetSheet(sheetName);
             }
             var mainDic = typeof(T).ToColumnDic();
-            int totalRows = sheet.Dimension.Rows;
-            int totalColums = sheet.Dimension.Columns;
+            int totalRows = sheet.LastRowNum;
+            int totalColums = sheet.GetRow(0)?.LastCellNum ?? 0;
 
             IList<T> list = new List<T>();
             //表头行
@@ -48,7 +49,7 @@ namespace CExcel.Service.Impl
             Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>> filterDic = new Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>>();
             for (int i = 1; i <= totalColums; i++)
             {
-                var dic = mainDic.Where(o => o.Value.Name.Equals(sheet.Cells[row, i].Value?.ToString()?.Trim()) || o.Key.Name.Equals(sheet.Cells[row, i].Value?.ToString()?.Trim())).FirstOrDefault();
+                var dic = mainDic.Where(o => o.Value.Name.Equals(sheet.GetRow(row).GetCell(i).ToValue()) || o.Key.Name.Equals(sheet.GetRow(row).GetCell(i).ToValue())).FirstOrDefault();
                 if (dic.Key != null)
                 {
                     var validationAttributes = dic.Key.GetCustomAttributes<ValidationAttribute>();
@@ -73,7 +74,8 @@ namespace CExcel.Service.Impl
                     var property = item.Key;
                     if (property != null)
                     {
-                        object cellValue = sheet.GetValue(row, column);
+                        //TODO 根据类型获取数据
+                        object cellValue = sheet.GetRow(row).GetCell(column).ToValue();
                         if (item.Value.Item2 != null && item.Value.Item2.Any())
                         {
                             foreach (var validator in item.Value.Item2)

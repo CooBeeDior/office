@@ -21,7 +21,7 @@ namespace CExcel.Extensions
     {
         public static ExcelPackage AddSheet<T>(this ExcelPackage ep, IList<T> data = null) where T : class, new()
         {
-            ExcelWorkbook wb = ep.Workbook;
+            ExcelWorkbook workbook= ep.Workbook;
             string sheetName = null;
             IExcelTypeFormater<ExcelWorksheet> defaultExcelTypeFormater = null;
             var excelAttribute = typeof(T).GetCustomAttribute<ExcelAttribute>();
@@ -34,13 +34,13 @@ namespace CExcel.Extensions
             {
                 if (excelAttribute.IsIncrease)
                 {
-                    if (wb.Worksheets.Count == 0)
+                    if (workbook.Worksheets.Count == 0)
                     {
                         sheetName = $"{excelAttribute.SheetName}";
                     }
                     else
                     {
-                        sheetName = $"{excelAttribute.SheetName}{wb.Worksheets.Count}";
+                        sheetName = $"{excelAttribute.SheetName}{workbook.Worksheets.Count}";
                     }
 
                 }
@@ -57,19 +57,19 @@ namespace CExcel.Extensions
                     defaultExcelTypeFormater = new DefaultExcelTypeFormater();
                 }
             }
-            ExcelWorksheet ws1 = wb.Worksheets[sheetName];
-            if (ws1 == null)
+            ExcelWorksheet sheet = workbook.Worksheets[sheetName];
+            if (sheet == null)
             {
-                ws1 = wb.Worksheets.Add(sheetName);
+                sheet = workbook.Worksheets.Add(sheetName);
             }
 
-            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
+            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(sheet);
 
             var mainPropertieList = typeof(T).ToColumnDic();
 
             IList<IExcelExportFormater<ExcelRangeBase>> excelTypes = new List<IExcelExportFormater<ExcelRangeBase>>();
             IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
-            int row = (ws1?.Dimension?.Rows ?? 0) + 1;
+            int row = (sheet?.Dimension?.Rows ?? 0) + 1;
             int column = 1;
 
             //表头行
@@ -89,7 +89,7 @@ namespace CExcel.Extensions
                 {
                     excelType = defaultExcelExportFormater;
                 }
-                excelType.SetHeaderCell()?.Invoke(ws1.Cells[row, column], item.Value.Name);
+                excelType.SetHeaderCell()?.Invoke(sheet.Cells[row, column], item.Value.Name);
                 column++;
             }
 
@@ -118,7 +118,7 @@ namespace CExcel.Extensions
                         {
                             excelType = defaultExcelExportFormater;
                         }
-                        excelType.SetBodyCell()?.Invoke(ws1.Cells[row, column], mainValue);
+                        excelType.SetBodyCell()?.Invoke(sheet.Cells[row, column], mainValue);
                         column++;
                     }
                     row++;
@@ -130,16 +130,16 @@ namespace CExcel.Extensions
 
         public static ExcelPackage AddSheet(this ExcelPackage ep, DataTable data)
         {
-            ExcelWorkbook wb = ep.Workbook;
+            ExcelWorkbook workbook= ep.Workbook;
             string sheetName = data.TableName;
             IExcelTypeFormater<ExcelWorksheet> defaultExcelTypeFormater = new DefaultExcelTypeFormater();
 
-            ExcelWorksheet ws1 = wb.Worksheets[sheetName];
-            if (ws1 == null)
+            ExcelWorksheet sheet = workbook.Worksheets[sheetName];
+            if (sheet == null)
             {
-                ws1 = wb.Worksheets.Add(sheetName);
+                sheet = workbook.Worksheets.Add(sheetName);
             }
-            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
+            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(sheet);
 
             var headerNames = new List<string>();
             for (int i = 0; i < data.Columns.Count; i++)
@@ -147,13 +147,13 @@ namespace CExcel.Extensions
                 headerNames.Add(data.Columns[i].ColumnName);
             }
             IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
-            int row = (ws1?.Dimension?.Rows ?? 0) + 1;
+            int row = (sheet?.Dimension?.Rows ?? 0) + 1;
             int column = 1;
 
             //表头行
             foreach (var headerName in headerNames)
             {
-                defaultExcelExportFormater.SetHeaderCell()?.Invoke(ws1.Cells[row, column], headerName);
+                defaultExcelExportFormater.SetHeaderCell()?.Invoke(sheet.Cells[row, column], headerName);
                 column++;
             }
 
@@ -168,7 +168,7 @@ namespace CExcel.Extensions
                     foreach (var headerName in headerNames)
                     {
                         var mainValue = data.Rows[i][headerName];
-                        defaultExcelExportFormater.SetBodyCell()?.Invoke(ws1.Cells[row, column], mainValue);
+                        defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet.Cells[row, column], mainValue);
                         column++;
                     }
                     row++;
@@ -189,19 +189,19 @@ namespace CExcel.Extensions
             {
                 throw new ArgumentNullException(nameof(headers));
             }
-            ExcelWorkbook wb = ep.Workbook;
+            ExcelWorkbook workbook= ep.Workbook;
             IExcelTypeFormater<ExcelWorksheet> defaultExcelTypeFormater = new DefaultExcelTypeFormater();
 
-            ExcelWorksheet ws1 = wb.Worksheets[sheetName];
-            if (ws1 == null)
+            ExcelWorksheet sheet = workbook.Worksheets[sheetName];
+            if (sheet == null)
             {
-                ws1 = wb.Worksheets.Add(sheetName);
+                sheet = workbook.Worksheets.Add(sheetName);
             }
-            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
+            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(sheet);
 
 
             IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
-            int row = (ws1?.Dimension?.Rows ?? 0) + 1;
+            int row = (sheet?.Dimension?.Rows ?? 0) + 1;
             int column = 1;
 
             //表头行
@@ -209,11 +209,11 @@ namespace CExcel.Extensions
             {
                 if (item.Action == null)
                 {
-                    defaultExcelExportFormater.SetHeaderCell()(ws1.Cells[row, column], item.HeaderName);
+                    defaultExcelExportFormater.SetHeaderCell()(sheet.Cells[row, column], item.HeaderName);
                 }
                 else
                 {
-                    item.Action.Invoke(ws1.Cells[row, column], item.HeaderName);
+                    item.Action.Invoke(sheet.Cells[row, column], item.HeaderName);
                 }
                 column++;
             }
@@ -234,19 +234,19 @@ namespace CExcel.Extensions
             {
                 throw new ArgumentNullException(nameof(headers));
             }
-            ExcelWorkbook wb = ep.Workbook;
+            ExcelWorkbook workbook= ep.Workbook;
             IExcelTypeFormater<ExcelWorksheet> defaultExcelTypeFormater = new DefaultExcelTypeFormater();
 
-            ExcelWorksheet ws1 = wb.Worksheets[sheetName];
-            if (ws1 == null)
+            ExcelWorksheet sheet = workbook.Worksheets[sheetName];
+            if (sheet == null)
             {
-                ws1 = wb.Worksheets.Add(sheetName);
+                sheet = workbook.Worksheets.Add(sheetName);
             }
-            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(ws1);
+            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(sheet);
 
 
             IExcelExportFormater<ExcelRangeBase> defaultExcelExportFormater = new DefaultExcelExportFormater();
-            int row = (ws1?.Dimension?.Rows ?? 0) + 1;
+            int row = (sheet?.Dimension?.Rows ?? 0) + 1;
             int column = 1;
 
             //表头行
@@ -254,11 +254,11 @@ namespace CExcel.Extensions
             {
                 if (action == null)
                 {
-                    defaultExcelExportFormater.SetHeaderCell()(ws1.Cells[row, column], item);
+                    defaultExcelExportFormater.SetHeaderCell()(sheet.Cells[row, column], item);
                 }
                 else
                 {
-                    action.Invoke(ws1.Cells[row, column], item);
+                    action.Invoke(sheet.Cells[row, column], item);
                 }
 
                 column++;
@@ -273,11 +273,11 @@ namespace CExcel.Extensions
 
         public static ExcelPackage AddBody(this ExcelPackage ep, string sheetName, IList<IList<object>> data)
         {
-            ExcelWorkbook wb = ep.Workbook;
-            ExcelWorksheet ws = wb.Worksheets[sheetName];
+            ExcelWorkbook workbook= ep.Workbook;
+            ExcelWorksheet ws = workbook.Worksheets[sheetName];
             if (ws == null)
             {
-                ws = wb.Worksheets.Add(sheetName);
+                ws = workbook.Worksheets.Add(sheetName);
             }
             if (data != null && data.Any())
             {
@@ -342,11 +342,11 @@ namespace CExcel.Extensions
 
         public static ExcelPackage AddBody(this ExcelPackage ep, string sheetName, IList<IDictionary<string, object>> data)
         {
-            ExcelWorkbook wb = ep.Workbook;
-            ExcelWorksheet ws = wb.Worksheets[sheetName];
+            ExcelWorkbook workbook= ep.Workbook;
+            ExcelWorksheet ws = workbook.Worksheets[sheetName];
             if (ws == null)
             {
-                ws = wb.Worksheets.Add(sheetName);
+                ws = workbook.Worksheets.Add(sheetName);
             }
             if (data != null && data.Any())
             {
@@ -409,9 +409,7 @@ namespace CExcel.Extensions
 
         }
 
-
-
-
+         
         public static ExcelPackage AddErrors<T>(this ExcelPackage ep, IList<ExportExcelError> errors, Action<ExcelRangeBase, string> action = null)
         {
             string sheetName = null;
@@ -463,6 +461,7 @@ namespace CExcel.Extensions
             return ep;
 
         }
+      
         /// <summary>
         /// 插入图片
         /// </summary>

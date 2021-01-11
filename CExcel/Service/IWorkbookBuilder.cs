@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml;
+﻿using CExcel.Models;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,17 +9,17 @@ namespace CExcel.Service
 {
     public interface IWorkbookBuilder<TWorkbook>
     {
-        TWorkbook CreateWorkbook(); 
+        TWorkbook CreateWorkbook(CExcelVersion excelVersion= CExcelVersion.Version2007); 
 
 
-        TWorkbook CreateWorkbook(Stream sm); 
+        TWorkbook CreateWorkbook(Stream sm, CExcelVersion excelVersion = CExcelVersion.Version2007); 
 
 
-        TWorkbook CreateWorkbook(byte[] buffer);
+        TWorkbook CreateWorkbook(byte[] buffer, CExcelVersion excelVersion = CExcelVersion.Version2007);
 
 
 
-        TWorkbook CreateWorkbook(string filename);
+        TWorkbook CreateWorkbook(string filename, CExcelVersion excelVersion = CExcelVersion.Version2007);
 
     }
 }

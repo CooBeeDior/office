@@ -1,11 +1,12 @@
 ﻿using CExcel.Service;
 using Microsoft.Extensions.DependencyInjection;
 using Spire.Xls;
+using SpireExcel;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SpireExcel
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class SpireExtensions
     {

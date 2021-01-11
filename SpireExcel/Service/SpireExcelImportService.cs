@@ -18,29 +18,29 @@ namespace SpireExcel
     {
         public IList<T> Import<T>(Workbook workbook, string sheetName = null) where T : class, new()
         {
-            Worksheet ws1 = null;
+            Worksheet sheet = null;
             if (string.IsNullOrEmpty(sheetName))
             {
                 var arrtibute = typeof(T).GetCustomAttribute<ExcelAttribute>();
                 if (arrtibute != null)
                 {
-                    ws1 = workbook.Worksheets[arrtibute.SheetName];
+                    sheet = workbook.Worksheets[arrtibute.SheetName];
                 }
                 else
                 {
-                    ws1 = workbook.Worksheets[1];
+                    sheet = workbook.Worksheets[1];
                 }
 
             }
             else
             {
-                ws1 = workbook.Worksheets[sheetName];
+                sheet = workbook.Worksheets[sheetName];
             }
 
             var mainDic = typeof(T).ToColumnDic();
 
-            int totalRows = ws1.Rows.Count();
-            int totalColums = ws1.Columns.Count();
+            int totalRows = sheet.Rows.Count();
+            int totalColums = sheet.Columns.Count();
 
             IList<T> list = new List<T>();
             //表头行
@@ -48,7 +48,7 @@ namespace SpireExcel
             Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>> filterDic = new Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>>();
             for (int i = 1; i <= totalColums; i++)
             {
-                var dic = mainDic.Where(o => o.Value.Name.Equals(ws1[row, i].Value2?.ToString()?.Trim()) || o.Key.Name.Equals(ws1[row, i].Value2?.ToString()?.Trim())).FirstOrDefault();
+                var dic = mainDic.Where(o => o.Value.Name.Equals(sheet[row, i].Value2?.ToString()?.Trim()) || o.Key.Name.Equals(sheet[row, i].Value2?.ToString()?.Trim())).FirstOrDefault();
                 if (dic.Key != null)
                 {
                     var validationAttributes = dic.Key.GetCustomAttributes<ValidationAttribute>();
@@ -73,7 +73,7 @@ namespace SpireExcel
                     var property = item.Key;
                     if (property != null)
                     {
-                        object cellValue = ws1[row,column].Value;
+                        object cellValue = sheet[row,column].Value;
                         if (item.Value.Item2 != null && item.Value.Item2.Any())
                         {
                             foreach (var validator in item.Value.Item2)
