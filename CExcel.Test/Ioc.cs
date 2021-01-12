@@ -20,6 +20,13 @@ namespace CExcel.Test
             service.AddSpireExcelService();
             return service.BuildServiceProvider();
         }
+
+
+        public static IServiceProvider AddNpoiExcelService()
+        {
+            service.AddNpoiExcelService();
+            return service.BuildServiceProvider();
+        }
         private static IServiceProvider _provider = null;
         public static IServiceProvider Provider
         {

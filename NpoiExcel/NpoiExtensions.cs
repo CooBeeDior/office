@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
      
     public static class NpoiExtensions
     {
-        public static IServiceCollection AddSpireExcelService(this IServiceCollection services)
+        public static IServiceCollection AddNpoiExcelService(this IServiceCollection services)
         {
             services.AddSingleton<IExcelExportService<IWorkbook>, NpoiExcelExportService>();
             services.AddSingleton<IExcelImportService<IWorkbook>, NpoiExcelImportService>();

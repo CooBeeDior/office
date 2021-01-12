@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -49,31 +50,31 @@ namespace NpoiExcel.Extensions
                 {
                     sheetName = excelAttribute.SheetName;
                 }
-                if (excelAttribute.ExportExcelType != null)
+                if (excelAttribute.ExportExcelType != null && typeof(IExcelTypeFormater<ISheet>).IsAssignableFrom(excelAttribute.ExportExcelType))
                 {
                     defaultExcelTypeFormater = Activator.CreateInstance(excelAttribute.ExportExcelType) as IExcelTypeFormater<ISheet>;
                 }
-                else
+                if (defaultExcelTypeFormater == null)
                 {
                     defaultExcelTypeFormater = new NpoiExcelTypeFormater();
                 }
             }
-            ISheet sheet= workbook.GetSheet(sheetName);
+            ISheet sheet = workbook.GetSheet(sheetName);
             if (sheet == null)
             {
-               sheet= workbook.CreateSheet(sheetName);
+                sheet = workbook.CreateSheet(sheetName);
             }
-
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(sheet);
 
             var mainPropertieList = typeof(T).ToColumnDic();
 
             IList<IExcelExportFormater<ICell>> excelTypes = new List<IExcelExportFormater<ICell>>();
             IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
-            int row = (sheet?.LastRowNum ?? 0) + 1;
-            int column = 1;
+            int row = (sheet?.LastRowNum ?? 0);
+            int column = 0;
 
             //表头行
+            var headerRowCell = sheet.CreateRow(row);
             foreach (var item in mainPropertieList)
             {
                 IExcelExportFormater<ICell> excelType = null;
@@ -90,7 +91,7 @@ namespace NpoiExcel.Extensions
                 {
                     excelType = defaultExcelExportFormater;
                 }
-                excelType.SetHeaderCell()?.Invoke(sheet.GetRow(row).GetCell(column), item.Value.Name);
+                excelType.SetHeaderCell()?.Invoke(headerRowCell.CreateCell(column), item.Value.Name);
                 column++;
             }
 
@@ -101,7 +102,8 @@ namespace NpoiExcel.Extensions
             {
                 foreach (var item in data)
                 {
-                    column = 1;
+                    var rowCell = sheet.CreateRow(row);
+                    column = 0;
                     foreach (var mainPropertie in mainPropertieList)
                     {
                         IExcelExportFormater<ICell> excelType = null;
@@ -119,7 +121,7 @@ namespace NpoiExcel.Extensions
                         {
                             excelType = defaultExcelExportFormater;
                         }
-                        excelType.SetBodyCell()?.Invoke(sheet.GetRow(row).GetCell(column), mainValue);
+                        excelType.SetBodyCell()?.Invoke(rowCell.CreateCell(column), mainValue);
                         column++;
                     }
                     row++;
@@ -134,10 +136,10 @@ namespace NpoiExcel.Extensions
             string sheetName = data.TableName;
             IExcelTypeFormater<ISheet> defaultExcelTypeFormater = new NpoiExcelTypeFormater();
 
-            ISheet sheet= workbook.GetSheet(sheetName);
+            ISheet sheet = workbook.GetSheet(sheetName);
             if (sheet == null)
             {
-               sheet= workbook.CreateSheet(sheetName);
+                sheet = workbook.CreateSheet(sheetName);
             }
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(sheet);
 
@@ -147,13 +149,14 @@ namespace NpoiExcel.Extensions
                 headerNames.Add(data.Columns[i].ColumnName);
             }
             IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
-            int row = (sheet?.LastRowNum ?? 0) + 1;
-            int column = 1;
+            int row = (sheet?.LastRowNum ?? 0);
+            int column = 0;
 
             //表头行
+            var headerRowCell = sheet.CreateRow(row);
             foreach (var headerName in headerNames)
             {
-                defaultExcelExportFormater.SetHeaderCell()?.Invoke(sheet.GetRow(row).GetCell(column), headerName);
+                defaultExcelExportFormater.SetHeaderCell()?.Invoke(headerRowCell.CreateCell(column), headerName);
                 column++;
             }
 
@@ -164,11 +167,12 @@ namespace NpoiExcel.Extensions
             {
                 for (int i = 0; i < data.Rows.Count; i++)
                 {
-                    column = 1;
+                    var rowCell = sheet.CreateRow(row);
+                    column = 0;
                     foreach (var headerName in headerNames)
                     {
                         var mainValue = data.Rows[i][headerName];
-                        defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet.GetRow(row).GetCell(column), mainValue);
+                        defaultExcelExportFormater.SetBodyCell()?.Invoke(rowCell.CreateCell(column), mainValue);
                         column++;
                     }
                     row++;
@@ -192,28 +196,29 @@ namespace NpoiExcel.Extensions
             }
             IExcelTypeFormater<ISheet> defaultExcelTypeFormater = new NpoiExcelTypeFormater();
 
-            ISheet sheet= workbook.GetSheet(sheetName);
+            ISheet sheet = workbook.GetSheet(sheetName);
             if (sheet == null)
             {
-               sheet= workbook.CreateSheet(sheetName);
+                sheet = workbook.CreateSheet(sheetName);
             }
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(sheet);
 
 
             IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
-            int row = (sheet?.LastRowNum ?? 0) + 1;
-            int column = 1;
+            int row = (sheet?.LastRowNum ?? 0);
+            int column = 0;
 
             //表头行
+            var headerRowCell = sheet.CreateRow(row);
             foreach (var item in headers)
             {
                 if (item.Action == null)
                 {
-                    defaultExcelExportFormater.SetHeaderCell()(sheet.GetRow(row).GetCell(column), item.HeaderName);
+                    defaultExcelExportFormater.SetHeaderCell()(headerRowCell.CreateCell(column), item.HeaderName);
                 }
                 else
                 {
-                    item.Action.Invoke(sheet.GetRow(row).GetCell(column), item.HeaderName);
+                    item.Action.Invoke(headerRowCell.CreateCell(column), item.HeaderName);
                 }
                 column++;
             }
@@ -236,28 +241,29 @@ namespace NpoiExcel.Extensions
             }
             IExcelTypeFormater<ISheet> defaultExcelTypeFormater = new NpoiExcelTypeFormater();
 
-            ISheet sheet= workbook.GetSheet(sheetName);
+            ISheet sheet = workbook.GetSheet(sheetName);
             if (sheet == null)
             {
-               sheet= workbook.CreateSheet(sheetName);
+                sheet = workbook.CreateSheet(sheetName);
             }
             defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(sheet);
 
 
             IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
-            int row = (sheet?.LastRowNum ?? 0) + 1;
-            int column = 1;
+            int row = (sheet?.LastRowNum ?? 0);
+            int column = 0;
 
             //表头行
+            var headerRowCell = sheet.CreateRow(row);
             foreach (var item in headers)
             {
                 if (action == null)
                 {
-                    defaultExcelExportFormater.SetHeaderCell()(sheet.GetRow(row).GetCell(column), item);
+                    defaultExcelExportFormater.SetHeaderCell()(headerRowCell.CreateCell(column), item);
                 }
                 else
                 {
-                    action.Invoke(sheet.GetRow(row).GetCell(column), item);
+                    action.Invoke(headerRowCell.CreateCell(column), item);
                 }
 
                 column++;
@@ -273,30 +279,31 @@ namespace NpoiExcel.Extensions
 
         public static IWorkbook AddBody(this IWorkbook workbook, string sheetName, IList<IList<object>> data)
         {
-            ISheet sheet= workbook.GetSheet(sheetName);
+            ISheet sheet = workbook.GetSheet(sheetName);
             if (sheet == null)
             {
-               sheet= workbook.CreateSheet(sheetName);
+                sheet = workbook.CreateSheet(sheetName);
             }
             if (data != null && data.Any())
             {
                 IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
-                int row = (sheet?.LastRowNum ?? 0) + 1;
+                int row = (sheet?.LastRowNum ?? 0);
                 foreach (var dic in data)
                 {
 
-                    int column = 1;
+                    int column = 0;
+                    var rowCell = sheet.CreateRow(row);
                     foreach (var item in dic)
                     {
                         if (item is ExportCellValue<ICell> cellValue)
                         {
                             if (cellValue?.ExportFormater != null)
                             {
-                                cellValue?.ExportFormater.SetBodyCell()?.Invoke(sheet.GetRow(row).GetCell(column), cellValue.Value);
+                                cellValue?.ExportFormater.SetBodyCell()?.Invoke(rowCell.CreateCell(column), cellValue.Value);
                             }
                             else
                             {
-                                defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet.GetRow(row).GetCell(column), cellValue.Value);
+                                defaultExcelExportFormater.SetBodyCell()?.Invoke(rowCell.CreateCell(column), cellValue.Value);
                             }
 
                         }
@@ -314,16 +321,16 @@ namespace NpoiExcel.Extensions
                                 var formatterValue = formatterPropertyInfo.GetValue(item) as IExcelExportFormater<ICell>;
                                 if (formatterValue != null)
                                 {
-                                    formatterValue.SetBodyCell()?.Invoke(sheet.GetRow(row).GetCell(column), value);
+                                    formatterValue.SetBodyCell()?.Invoke(rowCell.CreateCell(column), value);
                                 }
                                 else
                                 {
-                                    defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet.GetRow(row).GetCell(column), value);
+                                    defaultExcelExportFormater.SetBodyCell()?.Invoke(rowCell.CreateCell(column), value);
                                 }
                             }
                             else
                             {
-                                defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet.GetRow(row).GetCell(column), value);
+                                defaultExcelExportFormater.SetBodyCell()?.Invoke(rowCell.CreateCell(column), value);
                             }
 
                         }
@@ -341,30 +348,31 @@ namespace NpoiExcel.Extensions
 
         public static IWorkbook AddBody(this IWorkbook workbook, string sheetName, IList<IDictionary<string, object>> data)
         {
-            ISheet sheet= workbook.GetSheet(sheetName);
+            ISheet sheet = workbook.GetSheet(sheetName);
             if (sheet == null)
             {
-               sheet= workbook.CreateSheet(sheetName);
+                sheet = workbook.CreateSheet(sheetName);
             }
             if (data != null && data.Any())
             {
                 IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
-                int row = (sheet?.LastRowNum ?? 0) + 1;
+                int row = (sheet?.LastRowNum ?? 0);
                 foreach (var dic in data)
                 {
 
-                    int column = 1;
+                    int column = 0;
+                    var rowCell = sheet.CreateRow(row);
                     foreach (var item in dic)
                     {
                         if (item.Value is ExportCellValue<ICell> cellValue)
                         {
                             if (cellValue?.ExportFormater != null)
                             {
-                                cellValue?.ExportFormater.SetBodyCell()?.Invoke(sheet.GetRow(row).GetCell(column), cellValue.Value);
+                                cellValue?.ExportFormater.SetBodyCell()?.Invoke(rowCell.CreateCell(column), cellValue.Value);
                             }
                             else
                             {
-                                defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet.GetRow(row).GetCell(column), cellValue.Value);
+                                defaultExcelExportFormater.SetBodyCell()?.Invoke(rowCell.CreateCell(column), cellValue.Value);
                             }
 
                         }
@@ -382,16 +390,16 @@ namespace NpoiExcel.Extensions
                                 var formatterValue = formatterPropertyInfo.GetValue(item.Value) as IExcelExportFormater<ICell>;
                                 if (formatterValue != null)
                                 {
-                                    formatterValue.SetBodyCell()?.Invoke(sheet.GetRow(row).GetCell(column), value);
+                                    formatterValue.SetBodyCell()?.Invoke(rowCell.CreateCell(column), value);
                                 }
                                 else
                                 {
-                                    defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet.GetRow(row).GetCell(column), value);
+                                    defaultExcelExportFormater.SetBodyCell()?.Invoke(rowCell.CreateCell(column), value);
                                 }
                             }
                             else
                             {
-                                defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet.GetRow(row).GetCell(column), value);
+                                defaultExcelExportFormater.SetBodyCell()?.Invoke(rowCell.CreateCell(column), value);
                             }
 
                         }
@@ -436,11 +444,13 @@ namespace NpoiExcel.Extensions
             }
             if (action == null)
             {
+                var cellStyle = workSheet.Workbook.CreateCellStyle();
+                cellStyle.FillPattern = FillPattern.SolidForeground;
+                cellStyle.FillBackgroundColor = IndexedColors.Red.Index;
                 action = (cell, msg) =>
                 {
-                    cell.CellStyle.FillPattern = FillPattern.SolidForeground;
-                    cell.CellStyle.FillBackgroundColor = (short)Color.Red.ToArgb();
-                    if (workbook is HSSFWorkbook)
+                    cell.CellStyle = cellStyle;
+                    if (cell is HSSFCell)
                     {
                         cell.CellComment.String = new HSSFRichTextString(msg);
                     }
@@ -448,7 +458,7 @@ namespace NpoiExcel.Extensions
                     {
                         cell.CellComment.String = new XSSFRichTextString(msg);
                     }
-                 
+
                 };
             }
 
@@ -462,9 +472,98 @@ namespace NpoiExcel.Extensions
         }
 
 
+
         public static object ToValue(this ICell cell)
         {
-            return cell.StringCellValue;
+            object tempValue = "";
+            if (cell == null)
+            {
+                return tempValue;
+            }
+            switch (cell.CellType)
+            {
+                case NPOI.SS.UserModel.CellType.Blank:
+                    break;
+                case NPOI.SS.UserModel.CellType.Boolean:
+                    tempValue = cell.BooleanCellValue;
+                    break;
+                case NPOI.SS.UserModel.CellType.Error:
+                    break;
+                case NPOI.SS.UserModel.CellType.Formula:
+                    NPOI.SS.UserModel.IFormulaEvaluator fe = NPOI.SS.UserModel.WorkbookFactory.CreateFormulaEvaluator(cell.Sheet.Workbook);
+                    var cellValue = fe.Evaluate(cell);
+                    switch (cellValue.CellType)
+                    {
+                        case NPOI.SS.UserModel.CellType.Blank:
+                            break;
+                        case NPOI.SS.UserModel.CellType.Boolean:
+                            tempValue = cellValue.BooleanValue;
+                            break;
+                        case NPOI.SS.UserModel.CellType.Error:
+                            break;
+                        case NPOI.SS.UserModel.CellType.Formula:
+                            break;
+                        case NPOI.SS.UserModel.CellType.Numeric:
+                            tempValue = cellValue.NumberValue;
+                            break;
+                        case NPOI.SS.UserModel.CellType.String:
+                            tempValue = cellValue.StringValue;
+                            break;
+                        case NPOI.SS.UserModel.CellType.Unknown:
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case NPOI.SS.UserModel.CellType.Numeric:
+
+                    if (NPOI.SS.UserModel.DateUtil.IsCellDateFormatted(cell))
+                    {
+                        tempValue = cell.DateCellValue.ToString("yyyy-MM-dd");
+                    }
+                    else
+                    {
+                        tempValue = cell.NumericCellValue;
+                    }
+                    break;
+                case NPOI.SS.UserModel.CellType.String:
+                    tempValue = cell.StringCellValue.Trim();
+                    break;
+                case NPOI.SS.UserModel.CellType.Unknown:
+                    break;
+                default:
+                    break;
+            }
+            return tempValue;
+        }
+
+        public static ICell AddPicture(this ICell cell, byte[] bytes)
+        {
+            int pictureIdx = cell.Sheet.Workbook.AddPicture(bytes, PictureType.JPEG);
+            IDrawing patriarch = cell.Sheet.CreateDrawingPatriarch();
+            // 插图片的位置  HSSFClientAnchor（dx1,dy1,dx2,dy2,col1,row1,col2,row2) 后面再作解释
+            if (cell is HSSFCell)
+            {
+                HSSFClientAnchor anchor = new HSSFClientAnchor(70, 10, 0, 0, cell.ColumnIndex, cell.RowIndex, cell.ColumnIndex + 1, cell.RowIndex + 1);
+                //把图片插到相应的位置
+                HSSFPicture pict = (HSSFPicture)patriarch.CreatePicture(anchor, pictureIdx);
+            }
+            else
+            {
+                XSSFClientAnchor anchor = new XSSFClientAnchor(70, 10, 0, 0, cell.ColumnIndex, cell.RowIndex, cell.ColumnIndex + 1, cell.RowIndex + 1);
+                //把图片插到相应的位置
+                XSSFPicture pict = (XSSFPicture)patriarch.CreatePicture(anchor, pictureIdx);
+            }
+
+            return cell;
+        }
+
+        public static ICell AddPicture(this ICell cell, MemoryStream stream)
+        {
+            var buffer = new byte[stream.Length];
+            stream.Write(buffer, 0, buffer.Length);
+            stream.Seek(0, SeekOrigin.Begin);
+            return cell.AddPicture(buffer);
         }
     }
 }

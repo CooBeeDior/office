@@ -1,6 +1,7 @@
 ﻿using CExcel.Attributes;
 using CExcel.Exceptions;
 using CExcel.Extensions;
+using CExcel.Models;
 using CExcel.Service;
 using Spire.Xls;
 using System;
@@ -46,7 +47,7 @@ namespace SpireExcel.Extensions
                 {
                     defaultExcelTypeFormater = Activator.CreateInstance(excelAttribute.ExportExcelType) as IExcelTypeFormater<Worksheet>;
                 }
-                else
+                if (defaultExcelTypeFormater == null)
                 {
                     defaultExcelTypeFormater = new SpireExcelTypeFormater();
                 }
@@ -212,6 +213,142 @@ namespace SpireExcel.Extensions
             row++;
 
 
+            return workbook;
+
+        }
+
+        public static Workbook AddBody(this Workbook workbook, string sheetName, IList<IList<object>> data)
+        {
+            Worksheet sheet = workbook.Worksheets[sheetName];
+            if (sheet == null)
+            {
+                sheet = workbook.Worksheets.Add(sheetName);
+            }
+            if (data != null && data.Any())
+            {
+                IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
+                int row = (sheet.CellRecords.LastRow == -1 ? 0 : sheet.CellRecords.LastRow) + 1;
+                foreach (var dic in data)
+                {
+
+                    int column = 1;
+                    foreach (var item in dic)
+                    {
+                        if (item is ExportCellValue<CellRange> cellValue)
+                        {
+                            if (cellValue?.ExportFormater != null)
+                            {
+                                cellValue?.ExportFormater.SetBodyCell()?.Invoke(sheet[row, column], cellValue.Value);
+                            }
+                            else
+                            {
+                                defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet[row, column], cellValue.Value);
+                            }
+
+                        }
+                        else
+                        {
+                            var valuePropertyInfo = item.GetType().GetProperties().Where(o => o.Name.Equals("Value", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                            var value = valuePropertyInfo?.GetValue(item);
+                            if (valuePropertyInfo == null || value == null)
+                            {
+                                throw new Exception("Value值不能为空");
+                            }
+                            var formatterPropertyInfo = item.GetType().GetProperties().Where(o => typeof(IExcelExportFormater<CellRange>).IsAssignableFrom(o.PropertyType)).FirstOrDefault();
+                            if (formatterPropertyInfo != null)
+                            {
+                                var formatterValue = formatterPropertyInfo.GetValue(value) as IExcelExportFormater<CellRange>;
+                                if (formatterValue != null)
+                                {
+                                    formatterValue.SetBodyCell()?.Invoke(sheet[row, column], value);
+                                }
+                                else
+                                {
+                                    defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet[row, column], value);
+                                }
+                            }
+                            else
+                            {
+                                defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet[row, column], value);
+                            }
+
+                        }
+
+
+                        column++;
+                    }
+
+                    row++;
+                }
+            }
+            return workbook;
+
+        }
+
+        public static Workbook AddBody(this Workbook workbook, string sheetName, IList<IDictionary<string, object>> data)
+        {
+            Worksheet sheet   = workbook.Worksheets[sheetName];
+            if (sheet == null)
+            {
+                sheet = workbook.Worksheets.Add(sheetName);
+            }
+            if (data != null && data.Any())
+            {
+                IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
+                int row = (sheet.CellRecords.LastRow == -1 ? 0 : sheet.CellRecords.LastRow) + 1;
+                foreach (var dic in data)
+                {
+
+                    int column = 1;
+                    foreach (var item in dic)
+                    {
+                        if (item.Value is ExportCellValue<CellRange> cellValue)
+                        {
+                            if (cellValue?.ExportFormater != null)
+                            {
+                                cellValue?.ExportFormater.SetBodyCell()?.Invoke(sheet[row, column], cellValue.Value);
+                            }
+                            else
+                            {
+                                defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet[row, column], cellValue.Value);
+                            }
+
+                        }
+                        else
+                        {
+                            var valuePropertyInfo = item.Value.GetType().GetProperties().Where(o => o.Name.Equals("Value", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                            var value = valuePropertyInfo?.GetValue(item.Value);
+                            if (valuePropertyInfo == null || value == null)
+                            {
+                                throw new Exception("Value值不能为空");
+                            }
+                            var formatterPropertyInfo = item.Value.GetType().GetProperties().Where(o => typeof(IExcelExportFormater<CellRange>).IsAssignableFrom(o.PropertyType)).FirstOrDefault();
+                            if (formatterPropertyInfo != null)
+                            {
+                                var formatterValue = formatterPropertyInfo.GetValue(item.Value) as IExcelExportFormater<CellRange>;
+                                if (formatterValue != null)
+                                {
+                                    formatterValue.SetBodyCell()?.Invoke(sheet[row, column], value);
+                                }
+                                else
+                                {
+                                    defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet[row, column], value);
+                                }
+                            }
+                            else
+                            {
+                                defaultExcelExportFormater.SetBodyCell()?.Invoke(sheet[row, column], value);
+                            }
+
+                        }
+
+
+                        column++;
+                    }
+
+                    row++;
+                }
+            }
             return workbook;
 
         }

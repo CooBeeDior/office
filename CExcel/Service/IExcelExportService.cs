@@ -16,8 +16,6 @@ namespace CExcel.Service
 
         TWorkbook Export(IList<object> data);
 
-
-
         Stream ToStream(TWorkbook workbook);
     }
 }

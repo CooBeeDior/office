@@ -1,6 +1,7 @@
 ﻿using CExcel.Service;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace CExcel.Attributes
@@ -32,7 +33,12 @@ namespace CExcel.Attributes
             this.IsIncrease = isIncrease;
             if (exportExcelType != null)
             {
-                var type=typeof(IExcelTypeFormater<>).MakeGenericType(exportExcelType.GetInterfaces()[0].GenericTypeArguments[0]);
+                var genericType = exportExcelType.GetInterfaces()?.FirstOrDefault()?.GenericTypeArguments?.FirstOrDefault();
+                if (genericType == null)
+                {
+                    throw new ArgumentException("not assignablefrom 【IExcelTypeFormater】");
+                }
+                var type = typeof(IExcelTypeFormater<>).MakeGenericType(genericType);
                 if (!type.IsAssignableFrom(exportExcelType))
                 {
                     throw new ArgumentException("not assignablefrom 【IExcelTypeFormater】");

@@ -13,7 +13,7 @@ namespace NpoiExcel.Service
         {
             return (s) =>
             {
-                s.CreateFreezePane(1, 2);//冻结行
+                s.CreateFreezePane(0, 1);//冻结行
            
             };
         }

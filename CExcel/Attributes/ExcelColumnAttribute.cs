@@ -1,6 +1,7 @@
 ﻿using CExcel.Service;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace CExcel.Attributes
@@ -46,7 +47,12 @@ namespace CExcel.Attributes
             this.Ignore = ignore;
             if (exportExcelType != null)
             {
-                var type = typeof(IExcelExportFormater<>).MakeGenericType(exportExcelType.GetInterfaces()[0].GenericTypeArguments[0]);
+                var genericType = exportExcelType.GetInterfaces()?.FirstOrDefault()?.GenericTypeArguments?.FirstOrDefault();
+                if (genericType == null)
+                {
+                    throw new ArgumentException("not assignablefrom 【IExcelExportFormater】");
+                }
+                var type = typeof(IExcelExportFormater<>).MakeGenericType(genericType);
                 if (!type.IsAssignableFrom(exportExcelType))
                 {
                     throw new ArgumentException("not assignablefrom 【IExcelExportFormater】");
@@ -74,7 +80,7 @@ namespace CExcel.Attributes
         /// <param name="order"></param> 
         /// <param name="exportExcelType">导出Excel，必须继承 <see cref="IExcelExportFormater">IExcelExportFormater</see>,默认：<see cref="CExcel.Service.Impl.DefaultExcelExportFormater">DefaultExcelExportFormater</see></param>
         /// <param name="importExcelType">导入Excel，必须继承<see cref="IExcelImportFormater">IExcelImportFormater</see></param>
-        public ExcelColumnAttribute(string name, int order, Type exportExcelType, Type importExcelType) : this(name, order, false, exportExcelType, importExcelType)
+        public ExcelColumnAttribute(string name, int order, Type exportExcelType, Type importExcelType = null) : this(name, order, false, exportExcelType, importExcelType)
         {
 
         }

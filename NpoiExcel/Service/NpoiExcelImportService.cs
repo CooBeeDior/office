@@ -75,7 +75,7 @@ namespace NpoiExcel.Service
                     if (property != null)
                     {
                         //TODO 根据类型获取数据
-                        object cellValue = sheet.GetRow(row).GetCell(column).ToValue();
+                        object cellValue = sheet.GetRow(row)?.GetCell(column)?.ToValue();
                         if (item.Value.Item2 != null && item.Value.Item2.Any())
                         {
                             foreach (var validator in item.Value.Item2)

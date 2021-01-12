@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing;
@@ -13,53 +13,62 @@ using OfficeOpenXml;
 using OfficeOpenXml.DataValidation;
 using OfficeOpenXml.Style;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 using System.Data;
-using CExcel.Models;
+using NPOI.SS.UserModel;
+using NpoiExcel.Service;
+using NpoiExcel.Extensions;
+using NpoiExcel.Models;
+using NPOI.XSSF.UserModel;
+using NPOI.SS.Util;
 
 namespace CExcel.Test
 {
     [TestClass]
-    public class excelTest
+    public class npoiTest
     {
-        private readonly IExcelExportService<ExcelPackage> exportService = null;
-        private readonly IExcelImportService<ExcelPackage> excelImportService = null;
-        private readonly IWorkbookBuilder<ExcelPackage> workbookBuilder;
-        public excelTest()
+        private readonly IExcelExportService<IWorkbook> exportService = null;
+        private readonly IExcelImportService<IWorkbook> excelImportService = null;
+        private readonly IWorkbookBuilder<IWorkbook> workbookBuilder;
+        public npoiTest()
         {
-            var provider = Ioc.AddCExcelService();
-            exportService = provider.GetService<IExcelExportService<ExcelPackage>>();
-            excelImportService = provider.GetService<IExcelImportService<ExcelPackage>>();
-            workbookBuilder = provider.GetService<IWorkbookBuilder<ExcelPackage>>();
+            var provider = Ioc.AddNpoiExcelService();
+            exportService = provider.GetService<IExcelExportService<IWorkbook>>();
+            excelImportService = provider.GetService<IExcelImportService<IWorkbook>>();
+            workbookBuilder = provider.GetService<IWorkbookBuilder<IWorkbook>>();
         }
 
 
 
         /// <summary>
-        /// µº≥ˆ
+        /// ÂØºÂá∫
         /// </summary>
         [TestMethod]
         public void Export()
         {
-            IList<Student> students = new List<Student>();
+            IList<Student1> students = new List<Student1>();
             for (int i = 0; i < 100; i++)
             {
-                Student student = new Student()
+                Student1 student = new Student1()
                 {
                     Id = i,
-                    Name = $"–’√˚{i}",
+                    Name = $"ÂßìÂêç{i}",
                     Sex = 2,
                     Email = $"aaa{i}@123.com",
                     CreateAt = DateTime.Now.AddDays(-1).AddMinutes(i),
+                    Image=$"ÂõæÁâá{i}"
                 };
                 students.Add(student);
             }
             try
             {
-                var excelPackage = exportService.Export<Student>(students).AddSheet<Student>().AddSheet<Student>().AddSheet<Student>().AddSheet<Student>();
+                var workBook = workbookBuilder.CreateWorkbook();
 
-                FileInfo fileInfo = new FileInfo("a.xlsx");
-                excelPackage.SaveAs(fileInfo);
+                var excelPackage = exportService.Export<Student1>(students).AddSheet<Student1>().AddSheet<Student1>().AddSheet<Student1>().AddSheet<Student1>();
+
+                FileStream fs = File.Create("a.xlsx");
+                excelPackage.Write(fs);
+                fs.Close();
+
             }
             catch (Exception ex)
             {
@@ -71,59 +80,60 @@ namespace CExcel.Test
 
 
         /// <summary>
-        /// µº≥ˆ
+        /// ÂØºÂá∫
         /// </summary>
         [TestMethod]
         public void ExportHeader()
         {
-            var headers = new List<HeaderInfo>()
+            var headers = new List<NpoiHeaderInfo>()
             {
-               new HeaderInfo("–’√˚",(cell,o)=>
-               { cell.Value=o;
-                   cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                cell.Style.Fill.BackgroundColor.SetColor(Color.Red); } ),
-                         new HeaderInfo("–‘±") ,                         new HeaderInfo("–‘±") ,                         new HeaderInfo("–‘±") ,                         new HeaderInfo("–‘±") ,
-                                   new HeaderInfo("Õ∑œÒ") ,
+               new NpoiHeaderInfo("ÂßìÂêç",(cell,o)=>
+               { cell.SetCellValue(o?.ToString());
+                   cell.CellStyle.FillPattern = FillPattern.SolidForeground;
+                cell.CellStyle.FillBackgroundColor=(short)Color.Red.ToArgb(); } ),
+                         new NpoiHeaderInfo("ÊÄßÂà´") ,                         new NpoiHeaderInfo("ÊÄßÂà´") ,
+                new NpoiHeaderInfo("ÊÄßÂà´") ,                         new NpoiHeaderInfo("ÊÄßÂà´") ,
+                                   new NpoiHeaderInfo("Â§¥ÂÉè") ,
 
             };
-            IList<IList<object>> list = new List<IList< object>>();
+            IList<IList<object>> list = new List<IList<object>>();
             for (int i = 0; i < 10; i++)
             {
-                IList<object> cellValues = new List< object>();
-                cellValues.Add(new  
+                IList<object> cellValues = new List<object>();
+                cellValues.Add(new
                 {
-                    Value = $"–’√˚{i}",
+                    Value = $"ÂßìÂêç{i}",
 
                 });
 
-                cellValues.Add( new  
-                {
-                    Value = i%3,
-                    ExportFormater=new SexExcelTypeFormater()
-                });
-                cellValues.Add( new 
+                cellValues.Add(new
                 {
                     Value = i % 3,
-                    ExportFormater = new SexExcelTypeFormater()
-                });            
-                cellValues.Add( new  
+                    ExportFormater = new Sex1ExcelTypeFormater()
+                });
+                cellValues.Add(new
                 {
                     Value = i % 3,
-                    ExportFormater = new SexExcelTypeFormater()
+                    ExportFormater = new Sex1ExcelTypeFormater()
+                });
+                cellValues.Add(new
+                {
+                    Value = i % 3,
+                    ExportFormater = new Sex1ExcelTypeFormater()
                 });
 
-                cellValues.Add( new 
+                cellValues.Add(new
                 {
                     Value = $"http://www.baidu.com/{i}",
-                   aa=  new ImageExcelTypeFormater()
+                    aa = new ImageExcelTypeFormater()
                 });
                 list.Add(cellValues);
 
-            } 
+            }
 
             var ep = workbookBuilder.CreateWorkbook().AddSheetHeader("cc", headers).AddBody("cc", list);
-            FileInfo fileInfo = new FileInfo("d.xlsx");
-            ep.SaveAs(fileInfo);
+            FileStream fs = File.Create("d.xlsx");
+            ep.Write(fs);
         }
 
         [TestMethod]
@@ -136,7 +146,7 @@ namespace CExcel.Test
                 Student student = new Student()
                 {
                     Id = i,
-                    Name = $"–’√˚{i}",
+                    Name = $"ÂßìÂêç{i}",
                     Sex = 2,
                     Email = $"aaa{i}@123.com",
                     CreateAt = DateTime.Now.AddDays(-1).AddMinutes(i),
@@ -149,9 +159,9 @@ namespace CExcel.Test
                 DataTable tblDatas = new DataTable("Datas");
                 DataColumn dc = null;
                 dc = tblDatas.Columns.Add("ID", Type.GetType("System.Int32"));
-                dc.AutoIncrement = true;//◊‘∂Ø‘ˆº”
-                dc.AutoIncrementSeed = 1;//∆ ºŒ™1
-                dc.AutoIncrementStep = 1;//≤Ω≥§Œ™1
+                dc.AutoIncrement = true;//Ëá™Âä®Â¢ûÂä†
+                dc.AutoIncrementSeed = 1;//Ëµ∑Âßã‰∏∫1
+                dc.AutoIncrementStep = 1;//Ê≠•Èïø‰∏∫1
                 dc.AllowDBNull = false;//
 
                 dc = tblDatas.Columns.Add("Product", Type.GetType("System.String"));
@@ -160,19 +170,19 @@ namespace CExcel.Test
 
                 DataRow newRow;
                 newRow = tblDatas.NewRow();
-                newRow["Product"] = "¥Ûª∞Œ˜”Œ";
+                newRow["Product"] = "Â§ßËØùË•øÊ∏∏";
                 newRow["Version"] = "2.0";
-                newRow["Description"] = "Œ“∫‹œ≤ª∂";
+                newRow["Description"] = "ÊàëÂæàÂñúÊ¨¢";
                 tblDatas.Rows.Add(newRow);
 
                 newRow = tblDatas.NewRow();
-                newRow["Product"] = "√Œª√Œ˜”Œ";
+                newRow["Product"] = "Ê¢¶ÂπªË•øÊ∏∏";
                 newRow["Version"] = "3.0";
-                newRow["Description"] = "±»¥Ûª∞∏¸”◊÷…";
+                newRow["Description"] = "ÊØîÂ§ßËØùÊõ¥ÂπºÁ®ö";
                 tblDatas.Rows.Add(newRow);
                 var excelPackage = workbookBuilder.CreateWorkbook().AddSheet(tblDatas);
-                FileInfo fileInfo = new FileInfo("c.xlsx");
-                excelPackage.SaveAs(fileInfo);
+                FileStream fs = File.Create("c.xlsx");
+                excelPackage.Write(fs);
             }
             catch (Exception ex)
             {
@@ -182,12 +192,12 @@ namespace CExcel.Test
         }
 
         /// <summary>
-        /// µº»Î
+        /// ÂØºÂÖ•
         /// </summary>
         [TestMethod]
         public void Import()
         {
-            ExcelPackage ep = null;
+            IWorkbook ep = null;
 
             try
             {
@@ -201,15 +211,16 @@ namespace CExcel.Test
             catch (ExportExcelException ex)
             {
                 ep.AddErrors<Student>(ex.ExportExcelErrors);
-                FileInfo fileInfo = new FileInfo("b.xlsx");
-                ep.SaveAs(fileInfo);
+                FileStream fs = File.Create("b.xlsx");
+                ep.Write(fs);
+
             }
             catch (Exception ex) { }
 
         }
 
         /// <summary>
-        /// µº»Î¥ÌŒÛ
+        /// ÂØºÂÖ•ÈîôËØØ
         /// </summary>
         [TestMethod]
         public void AddError()
@@ -220,14 +231,14 @@ namespace CExcel.Test
                 var ep = workbookBuilder.CreateWorkbook(fs);
                 fs.Close();
                 IList<ExportExcelError> errors = new List<ExportExcelError>();
-                ExportExcelError a = new ExportExcelError(2, 3, "¥ÌŒÛµƒ");
-                ExportExcelError b = new ExportExcelError(3, 3, "¥ÌŒÛµƒ11133");
+                ExportExcelError a = new ExportExcelError(2, 3, "ÈîôËØØÁöÑ");
+                ExportExcelError b = new ExportExcelError(3, 3, "ÈîôËØØÁöÑ11133");
                 errors.Add(a);
                 errors.Add(b);
 
                 ep.AddErrors<Student>(errors);
-                var fs1 = File.Open("a.xlsx", FileMode.Open, FileAccess.ReadWrite);
-                ep.SaveAs(fs1);
+
+                ep.Write(fs);
             }
             catch (Exception ex)
             {
@@ -238,41 +249,46 @@ namespace CExcel.Test
 
     }
 
-
-    [Excel("—ß…˙–≈œ¢", true, typeof(StudentExcelTypeFormater))]
-    public class Student
+    [Excel("Â≠¶Áîü‰ø°ÊÅØ", true)]
+    public class Student1
     {
         /// <summary>
-        /// ÷˜º¸
+        /// ‰∏ªÈîÆ
         /// </summary>
         //[ExcelColumn("Id", 1)]
         public int Id { get; set; }
 
-        [ExcelColumn("–’√˚")]
-        [EmailAddress(ErrorMessage = "≤ª «” œ‰∏Ò Ω")]
+        [ExcelColumn("ÂßìÂêç")]
+        [EmailAddress(ErrorMessage = "‰∏çÊòØÈÇÆÁÆ±Ê†ºÂºè")]
         public string Name { get; set; }
 
 
-        //[ExcelColumn("–‘±", 3, typeof(SexExcelTypeFormater), typeof(SexExcelImportFormater))]
+        [ExcelColumn("ÊÄßÂà´", 3, typeof(Sex1ExcelTypeFormater), typeof(Sex1ExcelImportFormater))]
         public int Sex { get; set; }
 
 
-        //[ExcelColumn("” œ‰", 4)]
+        [ExcelColumn("ÈÇÆÁÆ±", 4)]
         [EmailAddress]
         public string Email { get; set; }
 
-        //[ExportColumn("¥¥Ω® ±º‰", 4, typeof(CreateAtExcelTypeFormater), typeof(CreateAtExcelImportFormater))]
-        [IngoreExcelColumn]
+        [ExcelColumn("ÂàõÂª∫Êó∂Èó¥", 4)]
+        //[IngoreExcelColumn]
         public DateTime CreateAt { get; set; }
+
+        /// <summary>
+        /// ÂõæÁâá
+        /// </summary>
+        [ExcelColumn("ÂõæÁâá", 5, typeof(Image1ExcelTypeFormater), null)]
+        public string Image { get; set; }
     }
 
 
 
 
 
-    public class StudentExcelTypeFormater : DefaultExcelTypeFormater
+    public class Student1ExcelTypeFormater : NpoiExcelTypeFormater
     {
-        public override Action<ExcelWorksheet> SetExcelWorksheet()
+        public override Action<ISheet> SetExcelWorksheet()
         {
             return (s) =>
             {
@@ -280,16 +296,25 @@ namespace CExcel.Test
 
                 var address = typeof(Student).GetCellAddress(nameof(Student.Email));
                 address = $"{address}2:{address}1000";
-                var val2 = s.DataValidations.AddCustomValidation(address);
-                val2.ShowErrorMessage = true;
-                val2.ShowInputMessage = true;
-                val2.PromptTitle = "◊‘∂®“Â¥ÌŒÛ–≈œ¢PromptTitle";
-                val2.Prompt = "◊‘∂®“Â¥ÌŒÛPrompt";
-                val2.ErrorTitle = "«Î ‰»Î” œ‰ErrorTitle";
-                val2.Error = "«Î ‰»Î” œ‰Error";
-                val2.ErrorStyle = ExcelDataValidationWarningStyle.stop;
-                var formula = val2.Formula;
-                formula.ExcelFormula = $"=COUNTIF({address},\"?*@*.*\")";
+
+                XSSFDataValidationHelper helper = new XSSFDataValidationHelper((XSSFSheet)s);
+
+                //ÂàõÂª∫È™åËØÅËßÑÂàô
+                IDataValidationConstraint constraint = helper.CreateCustomConstraint($"=COUNTIF({address},\"?*@*.*\")");
+
+                var validation = helper.CreateValidation(constraint, new CellRangeAddressList(1, 1000, 0, 0));
+
+                //ËÆæÁΩÆÁ∫¶ÊùüÊèêÁ§∫‰ø°ÊÅØ
+                validation.CreateErrorBox("ÈîôËØØ", "ËØ∑ÊåâÂè≥‰æß‰∏ãÊãâÁÆ≠Â§¥ÈÄâÊã©!");
+                validation.ShowErrorBox = true;
+                validation.ShowPromptBox = true;
+                validation.CreateErrorBox("ËØ∑ËæìÂÖ•ÈÇÆÁÆ±ErrorTitle", "ËØ∑ËæìÂÖ•ÈÇÆÁÆ±Error");
+                validation.CreatePromptBox("Ëá™ÂÆö‰πâÈîôËØØ‰ø°ÊÅØPromptTitle", "Ëá™ÂÆö‰πâÈîôËØØPrompt");
+                validation.ErrorStyle = 1;
+
+                s.AddValidationData(validation);
+
+
             };
 
         }
@@ -297,31 +322,34 @@ namespace CExcel.Test
     }
 
 
-    public class SexExcelTypeFormater : DefaultExcelExportFormater
+
+    public class Sex1ExcelTypeFormater : NpoiExcelExportFormater
     {
-        public override Action<ExcelRangeBase, object> SetBodyCell()
+        public override Action<ICell, object> SetBodyCell()
         {
             return (c, o) =>
             {
+                base.SetBodyCell()(c, o);
                 if (int.TryParse(o.ToString(), out int intValue))
                 {
                     if (intValue == 1)
                     {
-                        c.Value = "ƒ–";
+                        c.SetCellValue("Áî∑");
                     }
                     else if (intValue == 2)
                     {
-                        c.Value = "≈Æ";
+                        c.SetCellValue("Â•≥");
+
                     }
                     else
                     {
-                        c.Value = "Œ¥÷™";
+                        c.SetCellValue("Êú™Áü•");
                     }
 
                 }
                 else
                 {
-                    c.Value = "Œ¥÷™";
+                    c.SetCellValue("Êú™Áü•");
                 }
 
             };
@@ -329,8 +357,7 @@ namespace CExcel.Test
 
 
     }
-
-    public class SexExcelImportFormater : IExcelImportFormater
+    public class Sex1ExcelImportFormater : IExcelImportFormater
     {
         public object Transformation(object origin)
         {
@@ -338,11 +365,11 @@ namespace CExcel.Test
             {
                 return 0;
             }
-            else if (origin?.ToString() == "ƒ–")
+            else if (origin?.ToString() == "Áî∑")
             {
                 return 1;
             }
-            else if (origin?.ToString() == "≈Æ")
+            else if (origin?.ToString() == "Â•≥")
             {
                 return 2;
             }
@@ -354,27 +381,18 @@ namespace CExcel.Test
     }
 
 
-    public class ImageExcelTypeFormater : DefaultExcelExportFormater
+    public class Image1ExcelTypeFormater : NpoiExcelExportFormater
     {
-        public override Action<ExcelRangeBase, object> SetBodyCell()
+        public override Action<ICell, object> SetBodyCell()
         {
             return (c, o) =>
             {
-                c.Style.Font.Size = 12;
-                c.Style.Font.UnderLine = true;
-                c.Style.Font.Color.SetColor(Color.Blue);
-                c.Hyperlink = new Uri(o.ToString(), UriKind.Absolute);
-                c.Value = o;
-
-
                 var fs = File.OpenRead(@"images/a.jpg");
                 byte[] buffer = new byte[fs.Length];
                 fs.Read(buffer, 0, buffer.Length);
                 fs.Close();
                 fs.Dispose();
-                c.Worksheet.AddPicture(buffer,c,true);
-
-             
+                c.AddPicture(buffer);
             };
         }
 
