@@ -1,10 +1,12 @@
 ﻿using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace CExcel
 {
+    [DebuggerDisplay("名称: {HeaderName}")]
     public class HeaderInfo<TExcelRange>
     {
         public HeaderInfo(string headerName, Action<TExcelRange, object> action = null)

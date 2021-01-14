@@ -70,7 +70,7 @@ namespace NpoiExcel.Extensions
 
             IList<IExcelExportFormater<ICell>> excelTypes = new List<IExcelExportFormater<ICell>>();
             IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
-            int row = (sheet?.LastRowNum ?? 0);
+            int row = (sheet?.PhysicalNumberOfRows ?? 0);
             int column = 0;
 
             //表头行
@@ -149,7 +149,7 @@ namespace NpoiExcel.Extensions
                 headerNames.Add(data.Columns[i].ColumnName);
             }
             IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
-            int row = (sheet?.LastRowNum ?? 0);
+            int row = (sheet?.PhysicalNumberOfRows ?? 0);
             int column = 0;
 
             //表头行
@@ -205,7 +205,7 @@ namespace NpoiExcel.Extensions
 
 
             IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
-            int row = (sheet?.LastRowNum ?? 0);
+            int row = (sheet?.PhysicalNumberOfRows ?? 0);
             int column = 0;
 
             //表头行
@@ -250,7 +250,7 @@ namespace NpoiExcel.Extensions
 
 
             IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
-            int row = (sheet?.LastRowNum ?? 0);
+            int row = (sheet?.PhysicalNumberOfRows ?? 0);
             int column = 0;
 
             //表头行
@@ -287,7 +287,7 @@ namespace NpoiExcel.Extensions
             if (data != null && data.Any())
             {
                 IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
-                int row = (sheet?.LastRowNum ?? 0);
+                int row = (sheet?.PhysicalNumberOfRows ?? 0);
                 foreach (var dic in data)
                 {
 
@@ -356,7 +356,7 @@ namespace NpoiExcel.Extensions
             if (data != null && data.Any())
             {
                 IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
-                int row = (sheet?.LastRowNum ?? 0);
+                int row = (sheet?.PhysicalNumberOfRows ?? 0);
                 foreach (var dic in data)
                 {
 
@@ -444,18 +444,54 @@ namespace NpoiExcel.Extensions
             }
             if (action == null)
             {
-                var cellStyle = workSheet.Workbook.CreateCellStyle();
-                cellStyle.FillPattern = FillPattern.SolidForeground;
-                cellStyle.FillBackgroundColor = IndexedColors.Red.Index;
+          
+
                 action = (cell, msg) =>
                 {
+                    var cellStyle = cell.Sheet.Workbook.CreateCellStyle();
+                    cellStyle.FillPattern = FillPattern.FineDots;
+                    cellStyle.FillBackgroundColor = IndexedColors.Red.Index;
+                   
+
+                    #region 设置单元格字体样式
+                    var font = cell.Sheet.Workbook.CreateFont();
+                    font.IsBold = true;//字体为粗体
+                    font.Color = IndexedColors.White.Index;  //字体颜色
+                    font.FontName = "微软雅黑";//字体
+                    font.FontHeight = 12;//字体大小
+                    cellStyle.SetFont(font);
+
                     cell.CellStyle = cellStyle;
+                    #endregion   
+
                     if (cell is HSSFCell)
                     {
+                        if (cell.CellComment == null)
+                        {
+                            // 创建绘图主控制器(用于包括单元格注释在内的所有形状的顶级容器)
+                            IDrawing patriarch = cell.Sheet.CreateDrawingPatriarch();
+                            // 客户端锚定定义工作表中注释的大小和位置
+                            //(int dx1, int dy1, int dx2, int dy2, short col1, int row1, short col2, int row2) 
+                            //前四个参数是坐标点,后四个参数是编辑和显示批注时的大小.
+                            IComment comment = patriarch.CreateCellComment(new HSSFClientAnchor(0, 0, 0, 0, cell.ColumnIndex, cell.RowIndex, cell.ColumnIndex + 2, cell.RowIndex + 4));
+                            comment.Author = "系统管理员";
+                            cell.CellComment = comment;
+                        }
                         cell.CellComment.String = new HSSFRichTextString(msg);
                     }
                     else
                     {
+                        if (cell.CellComment == null)
+                        {
+                            // 创建绘图主控制器(用于包括单元格注释在内的所有形状的顶级容器)
+                            IDrawing patriarch = cell.Sheet.CreateDrawingPatriarch();
+                            // 客户端锚定定义工作表中注释的大小和位置
+                            //(int dx1, int dy1, int dx2, int dy2, short col1, int row1, short col2, int row2) 
+                            //前四个参数是坐标点,后四个参数是编辑和显示批注时的大小.
+                            IComment comment = patriarch.CreateCellComment(new XSSFClientAnchor(0, 0, 0, 0, cell.ColumnIndex, cell.RowIndex, cell.ColumnIndex + 2, cell.RowIndex + 4));
+                            comment.Author = "系统管理员";
+                            cell.CellComment = comment;
+                        }
                         cell.CellComment.String = new XSSFRichTextString(msg);
                     }
 

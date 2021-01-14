@@ -27,7 +27,7 @@ namespace NpoiExcel.Service
 
                     bodyCellStyle.BorderBottom = BorderStyle.Thin;//边框 
                 }
-                c.CellStyle = bodyCellStyle;
+                c.CellStyle = bodyCellStyle;         
 
                 //设置值
                 c.SetCellValue(o?.ToString());
@@ -68,6 +68,7 @@ namespace NpoiExcel.Service
                     #endregion            
                 }
                 c.CellStyle = headerCellStyle;
+ 
                 c.SetCellValue(o?.ToString());
             };
         }

@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CExcel\CExcel.csproj" />
+    <ProjectReference Include="..\NpoiExcel\NpoiExcel.csproj" />
+    <ProjectReference Include="..\SpireExcel\SpireExcel.csproj" />
   </ItemGroup>
 
 

@@ -27,11 +27,11 @@ namespace NpoiExcel.Service
                 var arrtibute = typeof(T).GetCustomAttribute<ExcelAttribute>();
                 if (arrtibute != null)
                 {
-                    sheet = workbook.GetSheet(sheetName);
+                    sheet = workbook.GetSheet(arrtibute.SheetName);
                 }
                 else
                 {
-                    sheet = workbook.GetSheet(sheetName);
+                    sheet = workbook.GetSheetAt(0);
                 }
 
             }
@@ -40,12 +40,12 @@ namespace NpoiExcel.Service
                 sheet = workbook.GetSheet(sheetName);
             }
             var mainDic = typeof(T).ToColumnDic();
-            int totalRows = sheet.LastRowNum;
+            int totalRows = sheet.LastRowNum + 1;
             int totalColums = sheet.GetRow(0)?.LastCellNum ?? 0;
 
             IList<T> list = new List<T>();
             //表头行
-            int row = 1;
+            int row = 0;
             Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>> filterDic = new Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>>();
             for (int i = 1; i <= totalColums; i++)
             {

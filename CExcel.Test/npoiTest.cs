@@ -45,25 +45,25 @@ namespace CExcel.Test
         [TestMethod]
         public void Export()
         {
-            IList<Student1> students = new List<Student1>();
+            IList<Student1> Student1s = new List<Student1>();
             for (int i = 0; i < 100; i++)
             {
-                Student1 student = new Student1()
+                Student1 Student1 = new Student1()
                 {
                     Id = i,
                     Name = $"姓名{i}",
                     Sex = 2,
                     Email = $"aaa{i}@123.com",
                     CreateAt = DateTime.Now.AddDays(-1).AddMinutes(i),
-                    Image=$"图片{i}"
+                    Image = $"图片{i}"
                 };
-                students.Add(student);
+                Student1s.Add(Student1);
             }
             try
             {
                 var workBook = workbookBuilder.CreateWorkbook();
 
-                var excelPackage = exportService.Export<Student1>(students).AddSheet<Student1>().AddSheet<Student1>().AddSheet<Student1>().AddSheet<Student1>();
+                var excelPackage = exportService.Export<Student1>(Student1s).AddSheet<Student1>().AddSheet<Student1>().AddSheet<Student1>().AddSheet<Student1>();
 
                 FileStream fs = File.Create("a.xlsx");
                 excelPackage.Write(fs);
@@ -89,10 +89,13 @@ namespace CExcel.Test
             {
                new NpoiHeaderInfo("姓名",(cell,o)=>
                { cell.SetCellValue(o?.ToString());
-                   cell.CellStyle.FillPattern = FillPattern.SolidForeground;
-                cell.CellStyle.FillBackgroundColor=(short)Color.Red.ToArgb(); } ),
+               var  cellStyle=   cell.Sheet.Workbook.CreateCellStyle();
+             cellStyle.FillPattern = FillPattern.SolidForeground;
+            cellStyle.FillBackgroundColor=IndexedColors.Red.Index;
+               cell.CellStyle=cellStyle;
+               } ),
                          new NpoiHeaderInfo("性别") ,                         new NpoiHeaderInfo("性别") ,
-                new NpoiHeaderInfo("性别") ,                         new NpoiHeaderInfo("性别") ,
+                new NpoiHeaderInfo("性别") ,
                                    new NpoiHeaderInfo("头像") ,
 
             };
@@ -124,8 +127,8 @@ namespace CExcel.Test
 
                 cellValues.Add(new
                 {
-                    Value = $"http://www.baidu.com/{i}",
-                    aa = new ImageExcelTypeFormater()
+                    Value = $"http://www.baidu888.com/{i}",
+                    //aa = new Image1ExcelTypeFormater()
                 });
                 list.Add(cellValues);
 
@@ -140,10 +143,10 @@ namespace CExcel.Test
         public void ExportFromDatatable()
         {
 
-            IList<Student> students = new List<Student>();
+            IList<Student1> Student1s = new List<Student1>();
             for (int i = 0; i < 100; i++)
             {
-                Student student = new Student()
+                Student1 Student1 = new Student1()
                 {
                     Id = i,
                     Name = $"姓名{i}",
@@ -151,7 +154,7 @@ namespace CExcel.Test
                     Email = $"aaa{i}@123.com",
                     CreateAt = DateTime.Now.AddDays(-1).AddMinutes(i),
                 };
-                students.Add(student);
+                Student1s.Add(Student1);
             }
             try
             {
@@ -170,15 +173,15 @@ namespace CExcel.Test
 
                 DataRow newRow;
                 newRow = tblDatas.NewRow();
-                newRow["Product"] = "大话西游";
-                newRow["Version"] = "2.0";
-                newRow["Description"] = "我很喜欢";
+                newRow["Product"] = "大话西756游";
+                newRow["Version"] = "2.750";
+                newRow["Description"] = "我很756喜欢";
                 tblDatas.Rows.Add(newRow);
 
                 newRow = tblDatas.NewRow();
-                newRow["Product"] = "梦幻西游";
+                newRow["Product"] = "梦幻756西游";
                 newRow["Version"] = "3.0";
-                newRow["Description"] = "比大话更幼稚";
+                newRow["Description"] = "比大话67更幼稚";
                 tblDatas.Rows.Add(newRow);
                 var excelPackage = workbookBuilder.CreateWorkbook().AddSheet(tblDatas);
                 FileStream fs = File.Create("c.xlsx");
@@ -197,27 +200,28 @@ namespace CExcel.Test
         [TestMethod]
         public void Import()
         {
-            IWorkbook ep = null;
-
-            try
+            using (var fs = File.Open("a.xlsx", FileMode.Open))
             {
-                using (var fs = File.Open("a.xlsx", FileMode.Open))
+                IWorkbook ep = null;
+                try
                 {
+
                     ep = workbookBuilder.CreateWorkbook(fs);
+
+                    var result = excelImportService.Import<Student1>(ep); 
+
                 }
-                var result = excelImportService.Import<Student>(ep);
-
+                catch (ExportExcelException ex)
+                {
+                    ep.AddErrors<Student1>(ex.ExportExcelErrors);
+                    FileStream fs1 = File.Create("b.xlsx");
+                    ep.Write(fs1);
+                    fs1.Close();
+                }
+                catch (Exception ex) { }
             }
-            catch (ExportExcelException ex)
-            {
-                ep.AddErrors<Student>(ex.ExportExcelErrors);
-                FileStream fs = File.Create("b.xlsx");
-                ep.Write(fs);
-
-            }
-            catch (Exception ex) { }
-
         }
+
 
         /// <summary>
         /// 导入错误
@@ -236,7 +240,7 @@ namespace CExcel.Test
                 errors.Add(a);
                 errors.Add(b);
 
-                ep.AddErrors<Student>(errors);
+                ep.AddErrors<Student1>(errors);
 
                 ep.Write(fs);
             }
@@ -294,7 +298,7 @@ namespace CExcel.Test
             {
                 base.SetExcelWorksheet()(s);
 
-                var address = typeof(Student).GetCellAddress(nameof(Student.Email));
+                var address = typeof(Student1).GetCellAddress(nameof(Student1.Email));
                 address = $"{address}2:{address}1000";
 
                 XSSFDataValidationHelper helper = new XSSFDataValidationHelper((XSSFSheet)s);
