@@ -524,8 +524,8 @@ namespace CExcel.Extensions
                 }
                 else if (!attribute.Ignore)
                 {
-                    if (attribute.Order == 0)
-                    {
+                    if (mainDic.Count > 0 && attribute.Order == 0)
+                    { 
                         order = mainDic.ElementAt(mainDic.Count - 1).Value.Order + 1;
                         attribute.Order = order;
                     }
