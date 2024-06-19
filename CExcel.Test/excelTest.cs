@@ -25,12 +25,18 @@ namespace CExcel.Test
         private readonly IExcelExportService<ExcelPackage> exportService = null;
         private readonly IExcelImportService<ExcelPackage> excelImportService = null;
         private readonly IWorkbookBuilder<ExcelPackage> workbookBuilder;
+        private readonly string path = "excel";
         public excelTest()
         {
             var provider = Ioc.AddCExcelService();
             exportService = provider.GetService<IExcelExportService<ExcelPackage>>();
             excelImportService = provider.GetService<IExcelImportService<ExcelPackage>>();
             workbookBuilder = provider.GetService<IWorkbookBuilder<ExcelPackage>>();
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
         }
 
 
@@ -51,6 +57,7 @@ namespace CExcel.Test
                     Sex = 2,
                     Email = $"aaa{i}@123.com",
                     CreateAt = DateTime.Now.AddDays(-1).AddMinutes(i),
+                    Email2 = i % 2 == 0 ? $"coobeediorcoobedior{i}@163.com" : "dada"
                 };
                 students.Add(student);
             }
@@ -58,7 +65,7 @@ namespace CExcel.Test
             {
                 var excelPackage = exportService.Export<Student>(students).AddSheet<Student>().AddSheet<Student>().AddSheet<Student>().AddSheet<Student>();
 
-                FileInfo fileInfo = new FileInfo("a.xlsx");
+                FileInfo fileInfo = new FileInfo(Path.Combine(path, "对象导出.xlsx"));
                 excelPackage.SaveAs(fileInfo);
             }
             catch (Exception ex)
@@ -86,43 +93,43 @@ namespace CExcel.Test
                                    new HeaderInfo("头像") ,
 
             };
-            IList<IList<object>> list = new List<IList< object>>();
+            IList<IList<object>> list = new List<IList<object>>();
             for (int i = 0; i < 10; i++)
             {
-                IList<object> cellValues = new List< object>();
-                cellValues.Add(new  
+                IList<object> cellValues = new List<object>();
+                cellValues.Add(new
                 {
                     Value = $"姓名{i}",
 
                 });
 
-                cellValues.Add( new  
-                {
-                    Value = i%3,
-                    ExportFormater=new SexExcelTypeFormater()
-                });
-                cellValues.Add( new 
+                cellValues.Add(new
                 {
                     Value = i % 3,
                     ExportFormater = new SexExcelTypeFormater()
-                });            
-                cellValues.Add( new  
+                });
+                cellValues.Add(new
+                {
+                    Value = i % 3,
+                    ExportFormater = new SexExcelTypeFormater()
+                });
+                cellValues.Add(new
                 {
                     Value = i % 3,
                     ExportFormater = new SexExcelTypeFormater()
                 });
 
-                cellValues.Add( new 
+                cellValues.Add(new
                 {
                     Value = $"http://www.baidu.com/{i}",
-                   aa=  new ImageExcelTypeFormater()
+                    aa = new ImageExcelTypeFormater()
                 });
                 list.Add(cellValues);
 
-            } 
+            }
 
             var ep = workbookBuilder.CreateWorkbook().AddSheetHeader("cc", headers).AddBody("cc", list);
-            FileInfo fileInfo = new FileInfo("d.xlsx");
+            FileInfo fileInfo = new FileInfo(Path.Combine(path, "数组导出.xlsx"));
             ep.SaveAs(fileInfo);
         }
 
@@ -171,7 +178,7 @@ namespace CExcel.Test
                 newRow["Description"] = "比大话更幼稚";
                 tblDatas.Rows.Add(newRow);
                 var excelPackage = workbookBuilder.CreateWorkbook().AddSheet(tblDatas);
-                FileInfo fileInfo = new FileInfo("c.xlsx");
+                FileInfo fileInfo = new FileInfo(Path.Combine(path, "dataTable导出.xlsx"));
                 excelPackage.SaveAs(fileInfo);
             }
             catch (Exception ex)
@@ -191,7 +198,7 @@ namespace CExcel.Test
 
             try
             {
-                using (var fs = File.Open("a.xlsx", FileMode.Open))
+                using (var fs = File.Open(Path.Combine(path, "对象导出.xlsx"), FileMode.Open))
                 {
                     ep = workbookBuilder.CreateWorkbook(fs);
                 }
@@ -201,7 +208,7 @@ namespace CExcel.Test
             catch (ExportExcelException ex)
             {
                 ep.AddErrors<Student>(ex.ExportExcelErrors);
-                FileInfo fileInfo = new FileInfo("b.xlsx");
+                FileInfo fileInfo = new FileInfo(Path.Combine(path, "对象导出异常.xlsx"));
                 ep.SaveAs(fileInfo);
             }
             catch (Exception ex) { }
@@ -216,7 +223,7 @@ namespace CExcel.Test
         {
             try
             {
-                var fs = File.Open("a.xlsx", FileMode.Open);
+                var fs = File.Open(Path.Combine(path, "对象导出.xlsx"), FileMode.Open);
                 var ep = workbookBuilder.CreateWorkbook(fs);
                 fs.Close();
                 IList<ExportExcelError> errors = new List<ExportExcelError>();
@@ -226,7 +233,7 @@ namespace CExcel.Test
                 errors.Add(b);
 
                 ep.AddErrors<Student>(errors);
-                var fs1 = File.Open("a.xlsx", FileMode.Open, FileAccess.ReadWrite);
+                var fs1 = File.Open(Path.Combine(path, "手动增加异常导出.xlsx"), FileMode.Open, FileAccess.ReadWrite);
                 ep.SaveAs(fs1);
             }
             catch (Exception ex)
@@ -249,19 +256,22 @@ namespace CExcel.Test
         public int Id { get; set; }
 
         [ExcelColumn("姓名")]
-        [EmailAddress(ErrorMessage = "不是邮箱格式")]
         public string Name { get; set; }
 
 
-        //[ExcelColumn("性别", 3, typeof(SexExcelTypeFormater), typeof(SexExcelImportFormater))]
+        [ExcelColumn("性别", 3, typeof(SexExcelTypeFormater), typeof(SexExcelImportFormater))]
         public int Sex { get; set; }
 
 
-        //[ExcelColumn("邮箱", 4)]
+        [ExcelColumn("邮箱", 4)]
         [EmailAddress]
         public string Email { get; set; }
 
-        //[ExportColumn("创建时间", 4, typeof(CreateAtExcelTypeFormater), typeof(CreateAtExcelImportFormater))]
+
+        [ExcelColumn("邮箱2", 4)]
+        [EmailAddress]
+        public string Email2 { get; set; }
+
         [IngoreExcelColumn]
         public DateTime CreateAt { get; set; }
     }
@@ -278,18 +288,18 @@ namespace CExcel.Test
             {
                 base.SetExcelWorksheet()(s);
 
-                var address = typeof(Student).GetCellAddress(nameof(Student.Email));
-                address = $"{address}2:{address}1000";
-                var val2 = s.DataValidations.AddCustomValidation(address);
-                val2.ShowErrorMessage = true;
-                val2.ShowInputMessage = true;
-                val2.PromptTitle = "自定义错误信息PromptTitle";
-                val2.Prompt = "自定义错误Prompt";
-                val2.ErrorTitle = "请输入邮箱ErrorTitle";
-                val2.Error = "请输入邮箱Error";
-                val2.ErrorStyle = ExcelDataValidationWarningStyle.stop;
-                var formula = val2.Formula;
-                formula.ExcelFormula = $"=COUNTIF({address},\"?*@*.*\")";
+                //var address = typeof(Student).GetCellAddress(nameof(Student.Email));
+                //address = $"{address}2:{address}1000";
+                //var val2 = s.DataValidations.AddCustomValidation(address);
+                //val2.ShowErrorMessage = true;
+                //val2.ShowInputMessage = true;
+                //val2.PromptTitle = "自定义错误信息PromptTitle";
+                //val2.Prompt = "自定义错误Prompt";
+                //val2.ErrorTitle = "请输入邮箱ErrorTitle";
+                //val2.Error = "请输入邮箱Error";
+                //val2.ErrorStyle = ExcelDataValidationWarningStyle.stop;
+                //var formula = val2.Formula;
+                //formula.ExcelFormula = $"=COUNTIF({address},\"?*@*.*\")";
             };
 
         }
@@ -301,8 +311,10 @@ namespace CExcel.Test
     {
         public override Action<ExcelRangeBase, object> SetBodyCell()
         {
+
             return (c, o) =>
             {
+                base.SetBodyCell()(c, o);
                 if (int.TryParse(o.ToString(), out int intValue))
                 {
                     if (intValue == 1)
@@ -372,9 +384,9 @@ namespace CExcel.Test
                 fs.Read(buffer, 0, buffer.Length);
                 fs.Close();
                 fs.Dispose();
-                c.Worksheet.AddPicture(buffer,c,true);
+                c.Worksheet.AddPicture(buffer, c, true);
 
-             
+
             };
         }
 
