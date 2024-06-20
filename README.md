@@ -182,3 +182,5 @@
 excel表格格式错误的数据默认处理会标红，并且标记错误信息。
 <img src="./img/eeplus_excel_errors.png" alt='导出数据'>
 ---
+欢迎大家使用，谢谢大家的赞助，会奉献更好的功能给大家
+<img src="./img/wechat_shoukuan.jpg" alt='导出数据'>
