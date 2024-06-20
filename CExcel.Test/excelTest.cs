@@ -55,10 +55,10 @@ namespace CExcel.Test
                 {
                     Id = i,
                     Name = $"姓名{i}",
-                    Sex = 2,
-                    Email = $"aaa{i}@123.com",
+                    Sex = i % 2 == 0 ? 1 : 2,
+                    Email = $"coobeedior{i}@123.com",
                     CreateAt = DateTime.Now.AddDays(-1).AddMinutes(i),
-                    Email2 = $"coobeediorcoobedior{i}@163.com" 
+                    Email2 = $"不是邮箱格式"
                 };
                 students.Add(student);
             }
@@ -265,20 +265,29 @@ namespace CExcel.Test
         [ExcelColumn("姓名")]
         public string Name { get; set; }
 
-
+        /// <summary>
+        /// 性别 增加导入和导出处理
+        /// </summary>
         [ExcelColumn("性别", 3, typeof(SexExcelTypeFormater), typeof(SexExcelImportFormater))]
         public int Sex { get; set; }
 
-
+        /// <summary>
+        /// 邮箱
+        /// </summary>
         [ExcelColumn("邮箱", 4)]
         [EmailAddress]
         public string Email { get; set; }
 
-
-        //[ExcelColumn("邮箱2", 4)]
-        [EmailAddress]
+        /// <summary>
+        /// 邮箱 
+        /// </summary>
+        [ExcelColumn("邮箱2", 4)]
+        [EmailAddress(ErrorMessage="该数据不是邮箱格式")]
         public string Email2 { get; set; }
 
+        /// <summary>
+        /// 创建时间 过滤此字段
+        /// </summary>
         [IngoreExcelColumn]
         public DateTime CreateAt { get; set; }
     }

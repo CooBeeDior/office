@@ -177,7 +177,6 @@ namespace CExcel.Extensions
             return ep;
 
         }
-
         public static ExcelPackage AddSheetHeader(this ExcelPackage ep, string sheetName, IList<HeaderInfo> headers)
         {
             if (string.IsNullOrEmpty(sheetName))
@@ -269,7 +268,6 @@ namespace CExcel.Extensions
             return ep;
 
         }
-
         public static ExcelPackage AddBody(this ExcelPackage ep, string sheetName, IList<IList<object>> data)
         {
             ExcelWorkbook workbook = ep.Workbook;
@@ -338,7 +336,6 @@ namespace CExcel.Extensions
             return ep;
 
         }
-
         public static ExcelPackage AddBody(this ExcelPackage ep, string sheetName, IList<IDictionary<string, object>> data)
         {
             ExcelWorkbook workbook = ep.Workbook;
@@ -407,8 +404,6 @@ namespace CExcel.Extensions
             return ep;
 
         }
-
-
         public static ExcelPackage AddErrors<T>(this ExcelPackage ep, IList<ExportExcelError> errors, Action<ExcelRangeBase, string> action = null)
         {
             string sheetName = null;
