@@ -46,18 +46,29 @@ namespace SpireExcel
             //表头行
             int row = 1;
             Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>> filterDic = new Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>>();
-            for (int i = 1; i <= totalColums; i++)
+            while (row <= 5)
             {
-                var dic = mainDic.Where(o => o.Value.Name.Equals(sheet[row, i].Value2?.ToString()?.Trim()) || o.Key.Name.Equals(sheet[row, i].Value2?.ToString()?.Trim())).FirstOrDefault();
-                if (dic.Key != null)
+                for (int i = 1; i <= totalColums; i++)
                 {
-                    var validationAttributes = dic.Key.GetCustomAttributes<ValidationAttribute>();
-                    filterDic.Add(dic.Key, Tuple.Create(dic.Value, validationAttributes));
+                    var dic = mainDic.Where(o => o.Value.Name.Equals(sheet[row, i].Value2?.ToString()?.Trim()) || o.Key.Name.Equals(sheet[row, i].Value2?.ToString()?.Trim())).FirstOrDefault();
+                    if (dic.Key != null)
+                    {
+                        var validationAttributes = dic.Key.GetCustomAttributes<ValidationAttribute>();
+                        filterDic.Add(dic.Key, Tuple.Create(dic.Value, validationAttributes));
+                    }
+
                 }
-
+                row++;
+                if (filterDic != null)
+                {
+                    break;
+                }
             }
-
-            row++;
+            if (filterDic == null || filterDic.Count == 0)
+            {
+                throw new NotFoundExcelHeaderException();
+            }
+         
 
             IList<IExcelImportFormater> excelTypes = new List<IExcelImportFormater>();
             IList<ExportExcelError> errors = new List<ExportExcelError>();

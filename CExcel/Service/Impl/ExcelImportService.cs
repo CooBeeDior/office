@@ -66,7 +66,7 @@ namespace CExcel.Service.Impl
                     break;
                 }
             }
-            if (filterDic == null)
+            if (filterDic == null || filterDic.Count == 0)
             {
                 throw new NotFoundExcelHeaderException();
             }
