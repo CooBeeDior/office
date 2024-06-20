@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using System.Data;
 using CExcel.Models;
+using NPOI.SS.UserModel;
 
 namespace CExcel.Test
 {
@@ -57,12 +58,13 @@ namespace CExcel.Test
                     Sex = 2,
                     Email = $"aaa{i}@123.com",
                     CreateAt = DateTime.Now.AddDays(-1).AddMinutes(i),
-                    Email2 = i % 2 == 0 ? $"coobeediorcoobedior{i}@163.com" : "dada"
+                    Email2 = $"coobeediorcoobedior{i}@163.com" 
                 };
                 students.Add(student);
             }
             try
             {
+
                 var excelPackage = exportService.Export<Student>(students).AddSheet<Student>().AddSheet<Student>().AddSheet<Student>().AddSheet<Student>();
 
                 FileInfo fileInfo = new FileInfo(Path.Combine(path, "对象导出.xlsx"));
@@ -86,13 +88,19 @@ namespace CExcel.Test
             var headers = new List<HeaderInfo>()
             {
                new HeaderInfo("姓名",(cell,o)=>
-               { cell.Value=o;
+               {
+                   cell.Value=o;
                    cell.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                cell.Style.Fill.BackgroundColor.SetColor(Color.Red); } ),
-                         new HeaderInfo("性别") ,                         new HeaderInfo("性别") ,                         new HeaderInfo("性别") ,                         new HeaderInfo("性别") ,
-                                   new HeaderInfo("头像") ,
+                   cell.Style.Fill.BackgroundColor.SetColor(Color.Red);
+               } ),
+               new HeaderInfo("性别1") ,
+               new HeaderInfo("性别2") ,
+               new HeaderInfo("性别3") ,
+               new HeaderInfo("性别4") ,
+               new HeaderInfo("头像") ,
 
             };
+
             IList<IList<object>> list = new List<IList<object>>();
             for (int i = 0; i < 10; i++)
             {
@@ -102,7 +110,6 @@ namespace CExcel.Test
                     Value = $"姓名{i}",
 
                 });
-
                 cellValues.Add(new
                 {
                     Value = i % 3,
@@ -268,7 +275,7 @@ namespace CExcel.Test
         public string Email { get; set; }
 
 
-        [ExcelColumn("邮箱2", 4)]
+        //[ExcelColumn("邮箱2", 4)]
         [EmailAddress]
         public string Email2 { get; set; }
 
@@ -287,6 +294,32 @@ namespace CExcel.Test
             return (s) =>
             {
                 base.SetExcelWorksheet()(s);
+
+                int row = (s?.Dimension?.Rows ?? 0) + 1;
+                int column = 1;
+                var c = s.Cells[row, column];
+                c.Value = "测试大大测试大大测试大大测试大大测试大大测试大大测试大大";
+                s.Cells["A1:E1"].Merge = true;//合并单元格
+                s.View.FreezePanes(3, 1); //冻结行
+                s.Cells.Style.ShrinkToFit = true;//单元格自动适应大小
+                s.Row(1).Height = 44;//设置行高
+                s.Row(1).CustomHeight = true;//自动调整行高
+                c.Style.Font.Size = 22;
+
+                #region 设置单元格对齐方式   
+                c.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;//水平居中
+                c.Style.VerticalAlignment = ExcelVerticalAlignment.Center;//垂直居中
+                #endregion
+
+                //c.AutoFitColumns();//单元格的宽度
+                c.Worksheet.Cells[c.Worksheet.Dimension.Address].AutoFitColumns();
+                c.Worksheet.Cells.AutoFitColumns(2, 50);
+                #region 设置单元格边框
+                c.Style.Border.BorderAround(ExcelBorderStyle.Thin, Color.FromArgb(191, 191, 191));//设置单元格所有边框
+                c.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;//单独设置单元格底部边框样式和颜色（上下左右均可分开设置）
+                c.Style.Border.Bottom.Color.SetColor(Color.LightYellow);
+                #endregion
+
 
                 //var address = typeof(Student).GetCellAddress(nameof(Student.Email));
                 //address = $"{address}2:{address}1000";
