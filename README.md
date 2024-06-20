@@ -177,7 +177,7 @@
 如下图所示: 
 <img src="./img/eeplus_import.png" alt='导出数据'>
 
-3.导入出现数据错误
+3.导入出现数据格式错误，默认框架会处理这些错误，并给错误信息标记颜色和错误信息，同时也可以自行对错误信息进行处理。
 <img src="./img/eeplus_errors.png" alt='导出数据'>
 excel表格格式错误的数据默认处理会标红，并且标记错误信息。
 <img src="./img/eeplus_excel_errors.png" alt='导出数据'>
