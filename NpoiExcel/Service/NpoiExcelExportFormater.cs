@@ -1,8 +1,6 @@
 ﻿using CExcel.Service;
 using NPOI.SS.UserModel;
-using NPOI.XSSF.UserModel;
 using System;
-using System.DrawingCore;
 
 namespace NpoiExcel.Service
 {

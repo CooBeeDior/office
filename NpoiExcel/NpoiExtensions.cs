@@ -1,4 +1,5 @@
-﻿using CExcel.Service;
+﻿using CExcel.Config;
+using CExcel.Service;
 using Microsoft.Extensions.DependencyInjection;
 using NPOI.SS.UserModel;
 using NpoiExcel.Service;
@@ -18,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddSingleton<IExcelProvider<IWorkbook>, NpoiExcelProvider>();
             services.AddSingleton<IWorkbookBuilder<IWorkbook>, NpoiWorkbookBuilder>();
-
+            services.AddSingleton<ExcelConfig>();
             return services;
         }
     }

@@ -1,4 +1,5 @@
 ﻿using CExcel.Attributes;
+using CExcel.Config;
 using CExcel.Exceptions;
 using CExcel.Extensions;
 using OfficeOpenXml;
@@ -19,6 +20,11 @@ namespace CExcel.Service.Impl
     /// <exception cref="ExportExcelException">导出数据校验不通过</exception>
     public class ExcelImportService : IExcelImportService<ExcelPackage>
     {
+        private readonly ExcelConfig _excelConfig;
+        public ExcelImportService(ExcelConfig excelConfig)
+        {
+            _excelConfig = excelConfig;
+        }
         public IList<T> Import<T>(ExcelPackage workbook, string sheetName = null) where T : class, new()
         {
             ExcelWorksheet sheet = null;
@@ -46,9 +52,9 @@ namespace CExcel.Service.Impl
             IList<T> list = new List<T>();
             //表头行
             int row = 1;
-            Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>> filterDic = new Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>>();
-            //第五行表头
-            while (row <= 5)
+            Dictionary<PropertyInfo, Tuple<int, ExcelColumnAttribute, IEnumerable<ValidationAttribute>>> filterDic = new Dictionary<PropertyInfo, Tuple<int, ExcelColumnAttribute, IEnumerable<ValidationAttribute>>>();
+
+            while (row <= _excelConfig.MaxNumberRowsMatchHeader)
             {
                 for (int i = 1; i <= totalColums; i++)
                 {
@@ -56,7 +62,7 @@ namespace CExcel.Service.Impl
                     if (dic.Key != null)
                     {
                         var validationAttributes = dic.Key.GetCustomAttributes<ValidationAttribute>();
-                        filterDic.Add(dic.Key, Tuple.Create(dic.Value, validationAttributes));
+                        filterDic.Add(dic.Key, Tuple.Create(i, dic.Value, validationAttributes));
                     }
 
                 }
@@ -77,18 +83,19 @@ namespace CExcel.Service.Impl
             for (int i = row; i <= totalRows; i++)
             {
                 T t = new T();
-                int column = 1;
+                //int column = 1;
 
 
                 foreach (var item in filterDic)
                 {
+                    int column = item.Value.Item1;
                     var property = item.Key;
                     if (property != null)
                     {
                         object cellValue = sheet.GetValue(row, column);
-                        if (item.Value.Item2 != null && item.Value.Item2.Any())
+                        if (item.Value.Item2 != null && item.Value.Item3.Any())
                         {
-                            foreach (var validator in item.Value.Item2)
+                            foreach (var validator in item.Value.Item3)
                             {
                                 if (!validator.IsValid(cellValue))
                                 {
@@ -99,12 +106,12 @@ namespace CExcel.Service.Impl
                         }
                         if (flag)
                         {
-                            if (item.Value.Item1.ImportExcelType != null)
+                            if (item.Value.Item2.ImportExcelType != null)
                             {
-                                var excelType = excelTypes.Where(o => o.GetType().FullName == item.Value.Item1.ImportExcelType.FullName).FirstOrDefault();
+                                var excelType = excelTypes.Where(o => o.GetType().FullName == item.Value.Item2.ImportExcelType.FullName).FirstOrDefault();
                                 if (excelType == null)
                                 {
-                                    excelType = Activator.CreateInstance(item.Value.Item1.ImportExcelType) as IExcelImportFormater;
+                                    excelType = Activator.CreateInstance(item.Value.Item2.ImportExcelType) as IExcelImportFormater;
                                     excelTypes.Add(excelType);
                                 }
                                 cellValue = excelType.Transformation(cellValue);
@@ -151,7 +158,7 @@ namespace CExcel.Service.Impl
                     }
 
 
-                    column++;
+                    //column++;
                 }
                 row++;
                 list.Add(t);

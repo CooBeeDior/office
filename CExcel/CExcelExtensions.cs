@@ -1,4 +1,5 @@
-﻿using CExcel.Service;
+﻿using CExcel.Config;
+using CExcel.Service;
 using CExcel.Service.Impl;
 using Microsoft.Extensions.DependencyInjection;
 using OfficeOpenXml;
@@ -17,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
          
             services.AddSingleton<IExcelProvider<ExcelPackage>, ExcelProvider>();
             services.AddSingleton<IWorkbookBuilder<ExcelPackage>, ExcelPackageBuilder>();
-          
+            services.AddSingleton<ExcelConfig>();
             return services;
         }
     }

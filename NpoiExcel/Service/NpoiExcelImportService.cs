@@ -1,4 +1,5 @@
 ﻿using CExcel.Attributes;
+using CExcel.Config;
 using CExcel.Exceptions;
 using CExcel.Extensions;
 using CExcel.Service;
@@ -19,6 +20,11 @@ namespace NpoiExcel.Service
     /// <exception cref="ExportExcelException">导出数据校验不通过</exception>
     public class NpoiExcelImportService : IExcelImportService<IWorkbook>
     {
+        private readonly ExcelConfig _excelConfig;
+        public NpoiExcelImportService(ExcelConfig excelConfig)
+        {
+            _excelConfig = excelConfig;
+        }
         public IList<T> Import<T>(IWorkbook workbook, string sheetName = null) where T : class, new()
         {
             ISheet sheet = null;
@@ -39,28 +45,29 @@ namespace NpoiExcel.Service
             {
                 sheet = workbook.GetSheet(sheetName);
             }
+
             var mainDic = typeof(T).ToColumnDic();
             int totalRows = sheet.LastRowNum + 1;
-            int totalColums = sheet.GetRow(0)?.LastCellNum ?? 0;
 
             IList<T> list = new List<T>();
             //表头行
             int row = 0;
-            Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>> filterDic = new Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>>();
-            while (row < 5)
+            Dictionary<PropertyInfo, Tuple<int, ExcelColumnAttribute, IEnumerable<ValidationAttribute>>> filterDic = new Dictionary<PropertyInfo, Tuple<int, ExcelColumnAttribute, IEnumerable<ValidationAttribute>>>();
+            while (row < _excelConfig.MaxNumberRowsMatchHeader)
             {
+                int totalColums = sheet.GetRow(row)?.LastCellNum ?? 0;
                 for (int i = 1; i <= totalColums; i++)
                 {
                     var dic = mainDic.Where(o => o.Value.Name.Equals(sheet.GetRow(row).GetCell(i).ToValue()) || o.Key.Name.Equals(sheet.GetRow(row).GetCell(i).ToValue())).FirstOrDefault();
                     if (dic.Key != null)
                     {
                         var validationAttributes = dic.Key.GetCustomAttributes<ValidationAttribute>();
-                        filterDic.Add(dic.Key, Tuple.Create(dic.Value, validationAttributes));
+                        filterDic.Add(dic.Key, Tuple.Create(i, dic.Value, validationAttributes));
                     }
 
                 }
                 row++;
-                if (filterDic != null && filterDic.Count >0)
+                if (filterDic != null && filterDic.Count > 0)
                 {
                     break;
                 }
@@ -76,19 +83,17 @@ namespace NpoiExcel.Service
             for (int i = row; i <= totalRows; i++)
             {
                 T t = new T();
-                int column = 1;
-
-
                 foreach (var item in filterDic)
                 {
+                    int column = item.Value.Item1;
                     var property = item.Key;
                     if (property != null)
                     {
                         //TODO 根据类型获取数据
                         object cellValue = sheet.GetRow(row)?.GetCell(column)?.ToValue();
-                        if (item.Value.Item2 != null && item.Value.Item2.Any())
+                        if (item.Value.Item2 != null && item.Value.Item3.Any())
                         {
-                            foreach (var validator in item.Value.Item2)
+                            foreach (var validator in item.Value.Item3)
                             {
                                 if (!validator.IsValid(cellValue))
                                 {
@@ -99,12 +104,12 @@ namespace NpoiExcel.Service
                         }
                         if (flag)
                         {
-                            if (item.Value.Item1.ImportExcelType != null)
+                            if (item.Value.Item2.ImportExcelType != null)
                             {
-                                var excelType = excelTypes.Where(o => o.GetType().FullName == item.Value.Item1.ImportExcelType.FullName).FirstOrDefault();
+                                var excelType = excelTypes.Where(o => o.GetType().FullName == item.Value.Item2.ImportExcelType.FullName).FirstOrDefault();
                                 if (excelType == null)
                                 {
-                                    excelType = Activator.CreateInstance(item.Value.Item1.ImportExcelType) as IExcelImportFormater;
+                                    excelType = Activator.CreateInstance(item.Value.Item2.ImportExcelType) as IExcelImportFormater;
                                     excelTypes.Add(excelType);
                                 }
                                 cellValue = excelType.Transformation(cellValue);
@@ -151,7 +156,7 @@ namespace NpoiExcel.Service
                     }
 
 
-                    column++;
+
                 }
                 row++;
                 list.Add(t);

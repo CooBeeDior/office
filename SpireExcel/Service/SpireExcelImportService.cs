@@ -1,4 +1,5 @@
 ﻿using CExcel.Attributes;
+using CExcel.Config;
 using CExcel.Exceptions;
 using CExcel.Extensions;
 using CExcel.Service;
@@ -16,6 +17,11 @@ namespace SpireExcel
 {
     public class SpireExcelImportService : IExcelImportService<Workbook>
     {
+        private readonly ExcelConfig _excelConfig;
+        public SpireExcelImportService(ExcelConfig excelConfig)
+        {
+            _excelConfig = excelConfig;
+        }
         public IList<T> Import<T>(Workbook workbook, string sheetName = null) where T : class, new()
         {
             Worksheet sheet = null;
@@ -39,14 +45,14 @@ namespace SpireExcel
 
             var mainDic = typeof(T).ToColumnDic();
 
-            int totalRows = sheet.Rows.Count();
+            int totalRows = sheet.CellList.Count;
             int totalColums = sheet.Columns.Count();
 
             IList<T> list = new List<T>();
             //表头行
             int row = 1;
-            Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>> filterDic = new Dictionary<PropertyInfo, Tuple<ExcelColumnAttribute, IEnumerable<ValidationAttribute>>>();
-            while (row <= 5)
+            Dictionary<PropertyInfo, Tuple<int, ExcelColumnAttribute, IEnumerable<ValidationAttribute>>> filterDic = new Dictionary<PropertyInfo, Tuple<int, ExcelColumnAttribute, IEnumerable<ValidationAttribute>>>();
+            while (row <= _excelConfig.MaxNumberRowsMatchHeader)
             {
                 for (int i = 1; i <= totalColums; i++)
                 {
@@ -54,12 +60,12 @@ namespace SpireExcel
                     if (dic.Key != null)
                     {
                         var validationAttributes = dic.Key.GetCustomAttributes<ValidationAttribute>();
-                        filterDic.Add(dic.Key, Tuple.Create(dic.Value, validationAttributes));
+                        filterDic.Add(dic.Key, Tuple.Create(i, dic.Value, validationAttributes));
                     }
 
                 }
                 row++;
-                if (filterDic != null)
+                if (filterDic != null && filterDic.Count > 0)
                 {
                     break;
                 }
@@ -68,26 +74,25 @@ namespace SpireExcel
             {
                 throw new NotFoundExcelHeaderException();
             }
-         
+
 
             IList<IExcelImportFormater> excelTypes = new List<IExcelImportFormater>();
             IList<ExportExcelError> errors = new List<ExportExcelError>();
             bool flag = true;
             for (int i = row; i <= totalRows; i++)
             {
-                T t = new T();
-                int column = 1;
-
+                T t = new T(); 
 
                 foreach (var item in filterDic)
                 {
+                    int column = item.Value.Item1;
                     var property = item.Key;
                     if (property != null)
                     {
-                        object cellValue = sheet[row,column].Value;
-                        if (item.Value.Item2 != null && item.Value.Item2.Any())
+                        object cellValue = sheet[row, column].Value;
+                        if (item.Value.Item2 != null && item.Value.Item3.Any())
                         {
-                            foreach (var validator in item.Value.Item2)
+                            foreach (var validator in item.Value.Item3)
                             {
                                 if (!validator.IsValid(cellValue))
                                 {
@@ -98,12 +103,12 @@ namespace SpireExcel
                         }
                         if (flag)
                         {
-                            if (item.Value.Item1.ImportExcelType != null)
+                            if (item.Value.Item2.ImportExcelType != null)
                             {
-                                var excelType = excelTypes.Where(o => o.GetType().FullName == item.Value.Item1.ImportExcelType.FullName).FirstOrDefault();
+                                var excelType = excelTypes.Where(o => o.GetType().FullName == item.Value.Item2.ImportExcelType.FullName).FirstOrDefault();
                                 if (excelType == null)
                                 {
-                                    excelType = Activator.CreateInstance(item.Value.Item1.ImportExcelType) as IExcelImportFormater;
+                                    excelType = Activator.CreateInstance(item.Value.Item2.ImportExcelType) as IExcelImportFormater;
                                     excelTypes.Add(excelType);
                                 }
                                 cellValue = excelType.Transformation(cellValue);
@@ -148,9 +153,7 @@ namespace SpireExcel
                             property?.SetValue(t, cellValue);
                         }
                     }
-
-
-                    column++;
+                     
                 }
                 row++;
                 list.Add(t);
@@ -164,6 +167,6 @@ namespace SpireExcel
 
 
 
-       
+
     }
 }

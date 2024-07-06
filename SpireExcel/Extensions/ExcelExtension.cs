@@ -64,7 +64,7 @@ namespace SpireExcel.Extensions
 
             IList<IExcelExportFormater<CellRange>> excelTypes = new List<IExcelExportFormater<CellRange>>();
             IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-            int row = (sheet.CellRecords.LastRow == -1 ? 0 : sheet.CellRecords.LastRow) + 1;
+            int row = (sheet.CellList.Count == -1 ? 0 : sheet.CellList.Count);
             int column = 1;
 
             //表头行
@@ -140,7 +140,7 @@ namespace SpireExcel.Extensions
             }
 
             IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-            int row = (sheet.CellRecords.LastRow == -1 ? 0 : sheet.CellRecords.LastRow) + 1;
+            int row = (sheet.CellList.Count == -1 ? 0 : sheet.CellList.Count);
             int column = 1;
 
             //表头行
@@ -193,7 +193,7 @@ namespace SpireExcel.Extensions
 
             IList<IExcelExportFormater<CellRange>> excelTypes = new List<IExcelExportFormater<CellRange>>();
             IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-            int row = (sheet.CellRecords.LastRow == -1 ? 0 : sheet.CellRecords.LastRow) + 1;
+            int row = (sheet.CellList.Count == -1 ? 0 : sheet.CellList.Count) ;
             int column = 1;
 
             //表头行
@@ -227,7 +227,7 @@ namespace SpireExcel.Extensions
             if (data != null && data.Any())
             {
                 IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-                int row = (sheet.CellRecords.LastRow == -1 ? 0 : sheet.CellRecords.LastRow) + 1;
+                int row = (sheet.CellList.Count == -1 ? 0 : sheet.CellList.Count) ;
                 foreach (var dic in data)
                 {
 
@@ -295,7 +295,7 @@ namespace SpireExcel.Extensions
             if (data != null && data.Any())
             {
                 IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-                int row = (sheet.CellRecords.LastRow == -1 ? 0 : sheet.CellRecords.LastRow) + 1;
+                int row = (sheet.CellList.Count == -1 ? 0 : sheet.CellList.Count) ;
                 foreach (var dic in data)
                 {
 

@@ -249,86 +249,13 @@ namespace CExcel.Test
 
         }
 
-        /// <summary>
-        /// 导入
-        /// </summary>
-        [TestMethod]
-        public void ImportGames()
-        {
-            ExcelPackage ep = null;
-
-            try
-            {
-                using (var fs = File.Open("E:\\最新游戏菜单下载 .xlsx", FileMode.Open))
-                {
-                    ep = workbookBuilder.CreateWorkbook(fs);
-                }
-                var result = excelImportService.Import<Game>(ep);
-
-            }
-            catch (ExportExcelException ex)
-            {
-                ep.AddErrors<Student>(ex.ExportExcelErrors);
-                FileInfo fileInfo = new FileInfo("b.xlsx");
-                ep.SaveAs(fileInfo);
-            }
-            catch (Exception ex) { }
-
-        }
+     
 
 
     }
 
 
-    [Excel("公司", true)]
-    public class Game
-    {
-
-        [ExcelColumn("游戏编号")]
-        public string Number { get; set; }
-        [ExcelColumn("激活码")]
-        public string AtivationCode { get; set; }
-
-
-        [ExcelColumn("游戏名称")]
-        public string Name { get; set; }
-
-        [ExcelColumn("天翼云盘")]
-        public string TianYi { get; set; }
-
-        [ExcelColumn("百度网盘")]
-        public string BaiDu { get; set; }
-
-        [ExcelColumn("夸克")]
-        public string Quark { get; set; }
-
-        [ExcelColumn("赠品")]
-        public string Gift { get; set; }
-
-
-        [ExcelColumn("游戏描述")]
-        public string Description { get; set; }
-
-
-        [ExcelColumn("游戏图片1")]
-        public string Img1 { get; set; }
-
-        [ExcelColumn("游戏图片2")]
-        public string Img2 { get; set; }
-
-        [ExcelColumn("游戏图片3")]
-        public string Img3 { get; set; }
-
-        [ExcelColumn("游戏图片4")]
-        public string Img4 { get; set; }
-
-        [ExcelColumn("游戏图片5")]
-        public string Img6 { get; set; }
-
-        [ExcelColumn("游戏视频")]
-        public string Video { get; set; }
-    }
-
+ 
 
     [Excel("学生信息", true, typeof(StudentExcelTypeFormater))]
     public class Student

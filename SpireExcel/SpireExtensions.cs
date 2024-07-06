@@ -1,4 +1,5 @@
-﻿using CExcel.Service;
+﻿using CExcel.Config;
+using CExcel.Service;
 using Microsoft.Extensions.DependencyInjection;
 using Spire.Xls;
 using SpireExcel;
@@ -16,7 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<IExcelImportService<Workbook>, SpireExcelImportService>(); 
             services.AddSingleton<IExcelProvider<Workbook>, SpireExcelProvider>();
             services.AddSingleton<IWorkbookBuilder<Workbook>, SpireWorkbookBuilder>();
-
+            services.AddSingleton<ExcelConfig>();
             return services;
         }
     }
