@@ -23,6 +23,9 @@ namespace CExcel.Service.Impl
                 //s.Row(1).Height = 44;//设置行高
                 //s.Row(1).CustomHeight = true;//自动调整行高
 
+                //s.Cells["A1:K1"].Merge = true;//合并单元格
+
+
                 //默认行高
                 //s.DefaultRowHeight = 22;
 
