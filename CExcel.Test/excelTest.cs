@@ -33,6 +33,25 @@ namespace CExcel.Test
             exportService = provider.GetService<IExcelExportService<ExcelPackage>>();
             excelImportService = provider.GetService<IExcelImportService<ExcelPackage>>();
             workbookBuilder = provider.GetService<IWorkbookBuilder<ExcelPackage>>();
+
+             
+
+            var provider1 = Ioc.AddNpoiExcelService();
+            var workbookBuilder1 = provider1.GetService<IWorkbookBuilder<IWorkbook>>();
+            var excelImportService1 = provider1.GetService<IExcelImportService<IWorkbook>>();
+            var exportService1 = provider1.GetService<IExcelExportService<IWorkbook>>();
+
+
+            var provider2 = Ioc.AddNpoiExcelService();
+            var workbookBuilder2 = provider2.GetService<IWorkbookBuilder<IWorkbook>>();
+            var excelImportService2 = provider2.GetService<IExcelImportService<IWorkbook>>();
+            var exportService2 = provider2.GetService<IExcelExportService<IWorkbook>>();
+
+            var provider3 = Ioc.AddCExcelService();
+            var workbookBuilder3 = provider3.GetService<IWorkbookBuilder<ExcelPackage>>();
+            var excelImportService3 = provider3.GetService<IExcelImportService<ExcelPackage>>();
+            var exportService3 = provider3.GetService<IExcelExportService<ExcelPackage>>();
+
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);

@@ -35,7 +35,7 @@ namespace SpireExcel.Extensions
                     }
                     else
                     {
-                        sheetName = $"{excelAttribute.SheetName}{ workbook.Worksheets.Count}";
+                        sheetName = $"{excelAttribute.SheetName}{workbook.Worksheets.Count}";
                     }
 
                 }
@@ -64,7 +64,7 @@ namespace SpireExcel.Extensions
 
             IList<IExcelExportFormater<CellRange>> excelTypes = new List<IExcelExportFormater<CellRange>>();
             IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-            int row = (sheet.CellList.Count == -1 ? 0 : sheet.CellList.Count);
+            int row = (sheet.LastDataRow == -1 ? 0 : sheet.LastDataRow) + 1;
             int column = 1;
 
             //表头行
@@ -140,7 +140,7 @@ namespace SpireExcel.Extensions
             }
 
             IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-            int row = (sheet.CellList.Count == -1 ? 0 : sheet.CellList.Count);
+            int row = (sheet.LastDataRow == -1 ? 0 : sheet.LastDataRow) + 1;
             int column = 1;
 
             //表头行
@@ -193,7 +193,7 @@ namespace SpireExcel.Extensions
 
             IList<IExcelExportFormater<CellRange>> excelTypes = new List<IExcelExportFormater<CellRange>>();
             IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-            int row = (sheet.CellList.Count == -1 ? 0 : sheet.CellList.Count) ;
+            int row = (sheet.LastDataRow == -1 ? 0 : sheet.LastDataRow) + 1;
             int column = 1;
 
             //表头行
@@ -227,7 +227,7 @@ namespace SpireExcel.Extensions
             if (data != null && data.Any())
             {
                 IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-                int row = (sheet.CellList.Count == -1 ? 0 : sheet.CellList.Count) ;
+                int row = (sheet.LastDataRow == -1 ? 0 : sheet.LastDataRow) + 1;
                 foreach (var dic in data)
                 {
 
@@ -287,7 +287,7 @@ namespace SpireExcel.Extensions
 
         public static Workbook AddBody(this Workbook workbook, string sheetName, IList<IDictionary<string, object>> data)
         {
-            Worksheet sheet   = workbook.Worksheets[sheetName];
+            Worksheet sheet = workbook.Worksheets[sheetName];
             if (sheet == null)
             {
                 sheet = workbook.Worksheets.Add(sheetName);
@@ -295,7 +295,7 @@ namespace SpireExcel.Extensions
             if (data != null && data.Any())
             {
                 IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
-                int row = (sheet.CellList.Count == -1 ? 0 : sheet.CellList.Count) ;
+                int row = (sheet.LastDataRow == -1 ? 0 : sheet.LastDataRow) + 1;
                 foreach (var dic in data)
                 {
 
@@ -351,6 +351,116 @@ namespace SpireExcel.Extensions
             }
             return workbook;
 
+        }
+
+
+        public static Workbook AddBody<T>(this Workbook workbook, IList<T> data, string sheetName = null) where T : class, new()
+        {
+
+            IExcelTypeFormater<Worksheet> defaultExcelTypeFormater = null;
+            var excelAttribute = typeof(T).GetCustomAttribute<ExcelAttribute>();
+            if (!string.IsNullOrWhiteSpace(sheetName))
+            {
+                if (excelAttribute == null)
+                {
+                    defaultExcelTypeFormater = new SpireExcelTypeFormater();
+                }
+                else
+                {
+                    if (excelAttribute.ExportExcelType != null)
+                    {
+                        defaultExcelTypeFormater = Activator.CreateInstance(excelAttribute.ExportExcelType) as IExcelTypeFormater<Worksheet>;
+                    }
+                    if (defaultExcelTypeFormater == null)
+                    {
+                        defaultExcelTypeFormater = new SpireExcelTypeFormater();
+                    }
+                }
+
+            }
+            else
+            {
+                if (excelAttribute == null)
+                {
+                    sheetName = typeof(T).Name;
+                    defaultExcelTypeFormater = new SpireExcelTypeFormater();
+                }
+                else
+                {
+                    if (excelAttribute.IsIncrease)
+                    {
+                        if (workbook.Worksheets.Count == 0)
+                        {
+                            sheetName = $"{excelAttribute.SheetName}";
+                        }
+                        else
+                        {
+                            sheetName = workbook.Worksheets.LastOrDefault().Name;
+                        }
+
+                    }
+                    else
+                    {
+                        sheetName = excelAttribute.SheetName;
+                    }
+                    if (excelAttribute.ExportExcelType != null)
+                    {
+                        defaultExcelTypeFormater = Activator.CreateInstance(excelAttribute.ExportExcelType) as IExcelTypeFormater<Worksheet>;
+                    }
+                    if (defaultExcelTypeFormater == null)
+                    {
+                        defaultExcelTypeFormater = new SpireExcelTypeFormater();
+                    }
+                }
+            }
+
+            Worksheet sheet = workbook.Worksheets[sheetName];
+            if (sheet == null)
+            {
+                sheet = workbook.Worksheets.Add(sheetName);
+            }
+            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(sheet);
+
+            var mainPropertieList = typeof(T).ToColumnDic();
+
+
+            IList<IExcelExportFormater<CellRange>> excelTypes = new List<IExcelExportFormater<CellRange>>();
+            IExcelExportFormater<CellRange> defaultExcelExportFormater = new SpireExcelExportFormater();
+            int row = (sheet.LastDataRow == -1 ? 0 : sheet.LastDataRow) + 1;
+            int column = 1;
+
+
+
+            //数据行 
+            if (data != null && data.Any())
+            {
+                foreach (var item in data)
+                {
+                    column = 1;
+                    foreach (var mainPropertie in mainPropertieList)
+                    {
+                        IExcelExportFormater<CellRange> excelType = null;
+                        var mainValue = mainPropertie.Key.GetValue(item);
+                        if (mainPropertie.Value.ExportExcelType != null)
+                        {
+                            excelType = excelTypes.Where(o => o.GetType().FullName == mainPropertie.Value.ExportExcelType.FullName).FirstOrDefault();
+                            if (excelType == null)
+                            {
+                                excelType = Activator.CreateInstance(mainPropertie.Value.ExportExcelType) as IExcelExportFormater<CellRange>;
+                                excelTypes.Add(excelType);
+                            }
+                        }
+                        else
+                        {
+                            excelType = defaultExcelExportFormater;
+                        }
+                        excelType.SetBodyCell()?.Invoke(sheet[row, column], mainValue);
+                        column++;
+                    }
+                    row++;
+                }
+            }
+            return workbook;
         }
 
         public static Workbook AddErrors(this Workbook workbook, string sheetName, IList<ExportExcelError> errors, Action<CellRange, string> action = null)

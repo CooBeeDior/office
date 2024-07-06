@@ -15,7 +15,7 @@ namespace SpireExcel
         {
             return (s) =>
             {
-                s.FreezePanes(2, 1);//冻结行
+                //s.FreezePanes(2, 1);//冻结行
             };
         }
     }

@@ -415,7 +415,116 @@ namespace NpoiExcel.Extensions
 
         }
 
+        public static IWorkbook AddBody<T>(this IWorkbook workbook, IList<T> data, string sheetName = null) where T : class, new()
+        {
 
+            IExcelTypeFormater<ISheet> defaultExcelTypeFormater = null;
+            var excelAttribute = typeof(T).GetCustomAttribute<ExcelAttribute>();
+            if (!string.IsNullOrWhiteSpace(sheetName))
+            {
+                if (excelAttribute == null)
+                {
+                    defaultExcelTypeFormater = new NpoiExcelTypeFormater();
+                }
+                else
+                {
+                    if (excelAttribute.ExportExcelType != null && typeof(IExcelTypeFormater<ISheet>).IsAssignableFrom(excelAttribute.ExportExcelType))
+                    {
+                        defaultExcelTypeFormater = Activator.CreateInstance(excelAttribute.ExportExcelType) as IExcelTypeFormater<ISheet>;
+                    }
+                    if (defaultExcelTypeFormater == null)
+                    {
+                        defaultExcelTypeFormater = new NpoiExcelTypeFormater();
+                    }
+                }
+            }
+            else
+            {
+                if (excelAttribute == null)
+                {
+                    sheetName = typeof(T).Name;
+                    defaultExcelTypeFormater = new NpoiExcelTypeFormater();
+                }
+                else
+                {
+                    if (excelAttribute.IsIncrease)
+                    {
+                        if (workbook.NumberOfSheets == 0)
+                        {
+                            sheetName = $"{excelAttribute.SheetName}";
+                        }
+                        else
+                        {
+                            sheetName = workbook.GetSheetAt(workbook.NumberOfSheets - 1).SheetName;
+                        }
+
+                    }
+                    else
+                    {
+                        sheetName = excelAttribute.SheetName;
+                    }
+
+
+                    if (excelAttribute.ExportExcelType != null && typeof(IExcelTypeFormater<ISheet>).IsAssignableFrom(excelAttribute.ExportExcelType))
+                    {
+                        defaultExcelTypeFormater = Activator.CreateInstance(excelAttribute.ExportExcelType) as IExcelTypeFormater<ISheet>;
+                    }
+                    if (defaultExcelTypeFormater == null)
+                    {
+                        defaultExcelTypeFormater = new NpoiExcelTypeFormater();
+                    }
+                }
+            }
+
+
+
+            ISheet sheet = workbook.GetSheet(sheetName);
+            if (sheet == null)
+            {
+                sheet = workbook.CreateSheet(sheetName);
+            }
+            defaultExcelTypeFormater.SetExcelWorksheet()?.Invoke(sheet);
+
+            var mainPropertieList = typeof(T).ToColumnDic();
+
+            IList<IExcelExportFormater<ICell>> excelTypes = new List<IExcelExportFormater<ICell>>();
+            IExcelExportFormater<ICell> defaultExcelExportFormater = new NpoiExcelExportFormater();
+            int row = (sheet?.PhysicalNumberOfRows ?? 0);
+            int column = 0;
+
+            //数据行 
+            if (data != null && data.Any())
+            {
+                foreach (var item in data)
+                {
+                    var rowCell = sheet.CreateRow(row);
+                    column = 0;
+                    foreach (var mainPropertie in mainPropertieList)
+                    {
+                        IExcelExportFormater<ICell> excelType = null;
+                        var mainValue = mainPropertie.Key.GetValue(item);
+                        if (mainPropertie.Value.ExportExcelType != null)
+                        {
+                            excelType = excelTypes.Where(o => o.GetType().FullName == mainPropertie.Value.ExportExcelType.FullName).FirstOrDefault();
+                            if (excelType == null)
+                            {
+                                excelType = Activator.CreateInstance(mainPropertie.Value.ExportExcelType) as IExcelExportFormater<ICell>;
+                                excelTypes.Add(excelType);
+                            }
+                        }
+                        else
+                        {
+                            excelType = defaultExcelExportFormater;
+                        }
+                        excelType.SetBodyCell()?.Invoke(rowCell.CreateCell(column), mainValue);
+                        column++;
+                    }
+                    row++;
+                }
+            }
+            return workbook;
+
+        }
         public static IWorkbook AddErrors<T>(this IWorkbook workbook, IList<ExportExcelError> errors, Action<ICell, string> action = null)
         {
             string sheetName = null;
@@ -444,14 +553,14 @@ namespace NpoiExcel.Extensions
             }
             if (action == null)
             {
-          
+
 
                 action = (cell, msg) =>
                 {
                     var cellStyle = cell.Sheet.Workbook.CreateCellStyle();
                     cellStyle.FillPattern = FillPattern.FineDots;
                     cellStyle.FillBackgroundColor = IndexedColors.Red.Index;
-                   
+
 
                     #region 设置单元格字体样式
                     var font = cell.Sheet.Workbook.CreateFont();

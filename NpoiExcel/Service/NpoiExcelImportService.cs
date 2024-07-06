@@ -47,7 +47,7 @@ namespace NpoiExcel.Service
             }
 
             var mainDic = typeof(T).ToColumnDic();
-            int totalRows = sheet.LastRowNum + 1;
+            int totalRows = sheet.LastRowNum;
 
             IList<T> list = new List<T>();
             //表头行
@@ -56,7 +56,7 @@ namespace NpoiExcel.Service
             while (row < _excelConfig.MaxNumberRowsMatchHeader)
             {
                 int totalColums = sheet.GetRow(row)?.LastCellNum ?? 0;
-                for (int i = 1; i <= totalColums; i++)
+                for (int i = 0; i <= totalColums; i++)
                 {
                     var dic = mainDic.Where(o => o.Value.Name.Equals(sheet.GetRow(row).GetCell(i).ToValue()) || o.Key.Name.Equals(sheet.GetRow(row).GetCell(i).ToValue())).FirstOrDefault();
                     if (dic.Key != null)

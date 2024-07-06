@@ -45,7 +45,7 @@ namespace SpireExcel
 
             var mainDic = typeof(T).ToColumnDic();
 
-            int totalRows = sheet.CellList.Count;
+            int totalRows = sheet.LastDataRow;
             int totalColums = sheet.Columns.Count();
 
             IList<T> list = new List<T>();
@@ -81,7 +81,7 @@ namespace SpireExcel
             bool flag = true;
             for (int i = row; i <= totalRows; i++)
             {
-                T t = new T(); 
+                T t = new T();
 
                 foreach (var item in filterDic)
                 {
@@ -153,7 +153,7 @@ namespace SpireExcel
                             property?.SetValue(t, cellValue);
                         }
                     }
-                     
+
                 }
                 row++;
                 list.Add(t);
